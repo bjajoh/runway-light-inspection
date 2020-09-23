@@ -1,6 +1,7 @@
 # runway-light-inspection
+## Mobile robot for automated visual inspection of the approach lighting system at Aarhus Airport (AAR). 
 https://www.ilocator.com/proposal//cover.php?ProposalID=6ymasXDnLmC3NSEPzF7ANSlGMOQGCzl4Lx3Svz0prog&debug=yes
-Mobile robot for automated visual inspection of the approach lighting system at Aarhus Airport (AAR). 
+
 
 
 ![Bilby Stampede](https://www.scientia.com/wp-content/uploads/2018/04/Aalborg-university-logo.png)
