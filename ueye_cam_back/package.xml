@@ -1,5 +1,5 @@
 <package format="3">
-  <name>ueye_cam</name>
+  <name>ueye_cam_back</name>
   <version>1.0.17</version>
   <description>
     A ROS nodelet and node that wraps the driver API for UEye cameras

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="nodelet_manager_name" default="nodelet_manager" />
+  <arg name="camera_name" default="front" />
+
+  <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" output="screen" />
+
+  <node pkg="nodelet" type="nodelet" name="ueye_cam_nodelet"
+        args="load ueye_cam/ueye_cam_nodelet $(arg nodelet_manager_name)">
+    <param name="camera_name" type="str" value="$(arg camera_name)" /> <!-- == namespace for topics and services -->
+    <param name="camera_topic" type="str" value="image_raw" />
+    <param name="camera_id" type="int" value="2" /> <!-- 0 = any camera; 1+: camera ID -->
+    <param name="camera_intrinsics_file" type="string" value="$(env HOME)/.ros/camera_info/$(arg camera_name).yaml" /> <!-- default: ~/.ros/camera_info/<camera_name>.yaml -->
+    <param name="camera_parameters_file" type="string" value="$(find ueye_cam)/resources/UI307xCP-C_conf.ini" /> <!-- default: ~/.ros/camera_conf/<camera_name>.ini -->
+
+    <param name="ext_trigger_mode" type="bool" value="False" /> <!-- if False, then camera will operate in free-run mode; otherwise, frames need to be triggered by hardware signal (falling-edge) on digital input pin of camera -->
+
+    <!-- the following are optional camera configuration parameters:
+         they will be loaded on the camera after the .ini configuration
+         file, and before dynamic_reconfigure. That means that any
+         (lingering) dynamic parameters from dynamic_reconfigure will
+         override these values, and that these will override parameters
+         from the .ini file.
+         See http://www.ros.org/wiki/ueye_cam for more details. -->
+
+    <param name="color_mode" type="str" value="bayer_rggb8" /> <!-- valid options: 'rgb8', 'mono8', 'bayer_rggb8' -->
+
+    <!-- WARNING: the following 4 parameters specify dimensions for camera's area of interest. Values for image_width and image_height that are smaller than your camera's maximum values will result in cropped field of view. For typical cases, one should modify values for sensor_scaling / binning / subsampling to downsample the resulting ROS image to the desired dimensions, without losing potential field of view. -->
+
+  </node>
+</launch>
