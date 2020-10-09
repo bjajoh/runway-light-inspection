@@ -1,0 +1,23 @@
+<library path="lib/libueye_nodelets">
+  <class name="ueye/CameraNodelet"
+         type="ueye::CameraNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description> 
+      description
+    </description>
+  </class>
+  <class name="ueye/StereoNodelet"
+         type="ueye::StereoNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description> 
+      description
+    </description>
+  </class>
+  <class name="ueye/FramerateNodelet"
+         type="ueye::FramerateNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description> 
+      description
+    </description>
+  </class>
+</library>

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<launch>
+
+	<!-- see cfg/mono.cfg for detail -->  
+	<arg name="camera_id"		default="0" />
+	<arg name="auto_exposure"	default="false" />
+	<arg name="auto_gain"		default="false" />
+	<arg name="color"		default="6" /> <!-- 0:MONO8, 1:MONO16, 2:YUV, 3:YCbCr, 4:BGR5, 5:BGR565, 6:BGR8, 7:BGRA8, 9:BGRY8, 9:RGB8, 10:RGBA8, 11, RGBY8 -->
+	<arg name="config_path"		default="" />
+	<arg name="exposure_time"	default="85" />
+	<arg name="force_streaming"	default="false" />
+	<arg name="frame_id"		default="/camera" />
+	<arg name="frame_rate"		default="30" />
+	<arg name="gain"		default="100" />
+	<arg name="gain_boost"		default="false" />
+	<arg name="hardware_gamma"	default="true" />
+	<arg name="pixel_clock"		default="86" />
+	<arg name="trigger"		default="0" /> <!-- 0:AUTO, 1:HARDWARE_RISING, 2:HARDWARE_FALLING -->
+	<arg name="zoom"		default="1" />
+
+	<node pkg="nodelet" type="nodelet" name="ueye_manager" args="manager" output="screen"/>
+
+	<node pkg="nodelet" type="nodelet" name="camera_nodelet" args="load ueye/CameraNodelet ueye_manager" >
+		<param name="cameraId"		value="$(arg camera_id)" />
+		<param name="auto_exposure"	value="$(arg auto_exposure)" />
+		<param name="auto_gain"		value="$(arg auto_gain)" />
+		<param name="color"		value="$(arg color)" />
+		<param name="config_path"	value="$(arg config_path)" />
+		<param name="exposure_time"	value="$(arg exposure_time)" />
+		<param name="force_streaming"	value="$(arg force_streaming)" />
+		<param name="frame_id"		value="$(arg frame_id)" />
+		<param name="frame_rate"	value="$(arg frame_rate)" />
+		<param name="gain"		value="$(arg gain)" />
+		<param name="gain_boost"	value="$(arg gain_boost)" />
+		<param name="hardware_gamma"	value="$(arg hardware_gamma)" />
+		<param name="pixel_clock"	value="$(arg pixel_clock)" />
+		<param name="trigger"		value="$(arg trigger)" />
+		<param name="zoom"		value="$(arg zoom)" />
+	</node>
+	<node pkg="nodelet" type="nodelet" name="framerate_nodelet" args="load ueye/FramerateNodelet ueye_manager"/>
+</launch>
