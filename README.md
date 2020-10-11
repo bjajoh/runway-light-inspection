@@ -2,9 +2,12 @@
 ## Mobile robot for automated visual inspection of the approach lighting system at Aarhus Airport (AAR). 
 https://www.ilocator.com/proposal//cover.php?ProposalID=6ymasXDnLmC3NSEPzF7ANSlGMOQGCzl4Lx3Svz0prog&debug=yes
 
-### Running the camera pipeline
+### Running the camera
 ``` 
-roslaunch ueye nodelets.launch
+roslaunch ueye mono.launch
+``` 
+``` 
+roslaunch ueye stereo.launch
 ``` 
 
 ![Bilby Stampede](https://upload.wikimedia.org/wikipedia/en/b/b9/AAU_logo_2012.png)
