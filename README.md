@@ -5,7 +5,7 @@ https://www.ilocator.com/proposal//cover.php?ProposalID=6ymasXDnLmC3NSEPzF7ANSlG
 ### Install
 Install all dependencies:
 ```
-rosdep install --from-paths src --ignore-src -r -
+rosdep install --from-paths src --ignore-src -r
 ```
 
 
