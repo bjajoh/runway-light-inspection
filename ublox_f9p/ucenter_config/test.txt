@@ -1,0 +1,16 @@
+# Config changes format version 1.0
+# created by u-center version 20.06.01 at 21:00:19 on Tuesday, 27 Oct 2020
+[del]
+[set]
+Flash CFG-UART2OUTPROT-RTCM3X 0                    # write value 0                    to item id 0x10760004 in layer 2
+Flash CFG-USBOUTPROT-RTCM3X 0                    # write value 0                    to item id 0x10780004 in layer 2
+Flash CFG-MSGOUT-UBX_NAV_RELPOSNED_UART1 0x1                  # write value 1  0x1               to item id 0x2091008e 
+Flash CFG-RATE-MEAS        0xc8                 # write value 200  0xc8            to item id 0x30210001 in layer 2
+Flash CFG-SIGNAL-BDS_B1_ENA 0                    # write value 0                    to item id 0x1031000d in layer 2
+Flash CFG-SIGNAL-BDS_B2_ENA 0                    # write value 0                    to item id 0x1031000e in layer 2
+Flash CFG-SIGNAL-QZSS_L1CA_ENA 0                    # write value 0                    to item id 0x10310012 in layer 2
+Flash CFG-SIGNAL-QZSS_L2C_ENA 0                    # write value 0                    to item id 0x10310015 in layer 2
+Flash CFG-SIGNAL-BDS_ENA   0                    # write value 0                    to item id 0x10310022 in layer 2
+Flash CFG-SIGNAL-QZSS_ENA  0                    # write value 0                    to item id 0x10310024 in layer 2
+Flash CFG-UART1-BAUDRATE   0x1c200              # write value 115200  0x1c200      to item id 0x40520001 in layer 2
+Flash CFG-UART2-BAUDRATE   0x1c200              # write value 115200  0x1c200      to item id 0x40530001 in layer 2
