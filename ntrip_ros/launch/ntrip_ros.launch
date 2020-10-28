@@ -4,7 +4,7 @@
   <node pkg="ntrip_ros" type="ntripclient.py" name="ntrip_ros" output="screen">
  	 <param name="rtcm_topic" value="/rtcm"/>
  	 <param name="ntrip_server" value="dk.nrtk.eu:9301"/>
- 	 <param name="ntrip_user" value=F9-44de1"/>
+ 	 <param name="ntrip_user" value="F9-44de1"/>
  	 <param name="ntrip_pass" value=1e993"/>
  	 <param name="ntrip_stream" value="MSM_VRS"/>
  	 <param name="nmea_gga" value="$GPGGA,..."/>
