@@ -12,7 +12,7 @@
 	<arg name="exposure_time"	default="100" />
 	<arg name="force_streaming"	default="false" />
 	<arg name="frame_id"		default="/camera" />
-	<arg name="frame_rate"		default="60"  />
+	<arg name="frame_rate"		default="100"  />
 	<arg name="gain"		default="100" />
 	<arg name="gain_boost"		default="false" />
 	<arg name="hardware_gamma"	default="true" />
