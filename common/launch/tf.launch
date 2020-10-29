@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="tf" type="static_transform_publisher" name="base_link_lidar" args="0.1 0 0 0 0 0 /base_link /base_link/lidar 10"/>
+  <node pkg="tf" type="static_transform_publisher" name="base_link_imu" args="0.0 0 0.0 0 0 0 /base_link /base_link/imu 10"/>
+  <node pkg="tf" type="static_transform_publisher" name="base_link_gps" args="0 0 0.5 0 0 0 /base_link /base_link/gps 10"/>
+  <node pkg="tf" type="static_transform_publisher" name="base_link_camera_front" args="0.2 0 0.3 0 0 0 /base_link /base_link/camera_front 10"/>
+  <node pkg="tf" type="static_transform_publisher" name="base_link_camera_back" args="-0.1 0 0.3 0 0 0 /base_link /base_link/camera_back 10"/>
+</launch>

@@ -1848,6 +1848,7 @@ void TimProduct::initializeRosDiagnostics() {
 void rtcmCallback(const rtcm_msgs::Message::ConstPtr &msg)
 {
   gps.sendRtcm(msg->message);
+  std::cout << "RTCM Correction received" << std::endl;
 }
 
 
@@ -1858,7 +1859,7 @@ int main(int argc, char** argv) {
 
   ros::NodeHandle param_nh("~");
   std::string rtcm_topic;
-  param_nh.param("rtcm_topic", rtcm_topic, std::string("rtcm"));
+  param_nh.param("/ntrip_ros/rtcm_topic", rtcm_topic, std::string("rtcm"));
   subRTCM = nh->subscribe(rtcm_topic, 10, rtcmCallback);
   
 

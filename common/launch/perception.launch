@@ -1,0 +1,4 @@
+<launch>
+	<include file="$(find common)/launch/gnss.launch"/>
+	<include file="$(find ueye)/launch/mono.launch"/>
+</launch>

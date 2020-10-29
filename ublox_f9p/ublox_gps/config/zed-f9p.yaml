@@ -16,4 +16,8 @@ publish:
     relposned: true
     posllh: true
     posecef: true
+  rxm:
+    rtcm: true
+
+dgnss_mode: 3               # Fixed mode
 

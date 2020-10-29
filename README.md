@@ -8,8 +8,17 @@ Install all dependencies:
 rosdep install --from-paths src --ignore-src -r
 ```
 
+Generate Correction Data NEMA code https://nmeagen.org/
+
 
 ### Running the camera
+```
+roslaunch common perception.launch
+```
+```
+roslaunch common gnss.launch
+```
+
 ``` 
 roslaunch ueye mono.launch
 ``` 
