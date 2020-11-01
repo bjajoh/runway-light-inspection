@@ -12,7 +12,7 @@ databaseAuthPass = "Aarilo654"
 objectFieldNames = ['id', 'latitude', 'longitude', 'part_nmbr', 'serial_nmbr', 'information', 'information2', 'dimension', 'weight', 'origin', 'mobileapp_version_number', 'gps_precision', 'gps_age', 'gps_altitude', 'organizations_id', 'users_id', 'created', 'modified', 'modified_merged', 'crud', 'deleted', 'modified_timezone', 'object_categories_id', 'object_types_id', 'object_events_id', 'object_statuses_id']
 
 
-def getAPIKey:
+def getAPIKey():
     #Initialize request values
     payload = {
     'username':databaseAuthUser,
@@ -41,12 +41,12 @@ def getAPIKey:
         APIfile = open("token.txt","w")
         APIfile.write(APItoken)
         APIfile.close()
-        return 1
+        return APItoken
     except:
         return 0
 
-def getDBObjects:
-
+def getDBObjects(APItokenInput):
+    APItoken = APItokenInput
     #Initialize data sync request values
     syncPayload = {'synchronized_last': ''} ###This will need to be updated with the accurate timings, but that can be fully included later
     syncHeaders = {
@@ -72,6 +72,32 @@ def getDBObjects:
         return 1
     except:
         return 0
-def syncToDB:
+def syncToDB():
     #Pending, need to fix a CSV to dictionary import issue with line handling.
-    return 0
+    objectsToSync = []
+    with open('objects.csv', newline = '') as csvFile:
+        reader = csv.DictReader(csvFile)
+        for object in reader:
+            if object['times_seen'] > seenThreshold:
+                object['object_statuses_id'] = 701063 #Double check with Octavian on this, make sure it's the right status.
+                objectNoCounter = object
+            #    objectNoCounter.del('times_seen')
+                objectsToSync.append(object)
+
+    #Formulate Date. There is a slight difference between ISO 8601 and how iLocator handles the time, the 'T' should be replaced with a space and the last bits of the time truncated.
+    rawDate = datetime.now()
+    formedDate = rawDate.strftime('%Y-%m-%d %H:%M:%s')
+    print('date calc yields:'+formedDate)
+
+    syncPayload = {'synchronized_last': formedDate, 'data': objectsToSync} ###This will need to be updated with the accurate timings, but that can be fully included later
+    syncHeaders = {
+        'Accept' : 'application/json',
+        'Application-Authorization' : 'Bearer '+APItoken
+    }
+    syncFiles = []
+
+    try:
+        dataPostResp = requests("POST", syncURL, headers = syncHeaders, data=syncPayload, files=syncFiles)
+        return 1
+    except:
+        return 0
