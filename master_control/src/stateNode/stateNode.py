@@ -1,12 +1,13 @@
-#!/usr/bin/env/python
+#!/usr/bin/env python3
 import rospy
 from datetime import datetime, timedelta, time
 from std_msgs.msg import String
-from ilocator_pythonLib import *
+import ilocator_pythonLib
 
-global isDone = 0
-global kswitchStatus = 1
-global lastKeepAlive 0
+isDone = 0
+kswitchStatus = 1
+lastKeepAlive = 0
+    
 def trajCallback(data):
     #Quick callback function that just returns the value. Using this for the
     #subscriber stuff since new subscribed messages can be dropped in as arguments.
@@ -15,7 +16,7 @@ def trajCallback(data):
 def killswitchCallback(data):
     if lastKeepAlive == 0:
         lastKeepAlive = time(now)
-    if data.data == "alive"
+    if data.data == "alive":
         kswitchStatus = 0
 
 def stateNode():
@@ -26,50 +27,57 @@ def stateNode():
     rate = rospy.Rate(20)
 
     trajectoryState = ''
-    hasAPIKey, successfulDBDownload, isAlive, successfulUpload, lockCycle = 0
+    hasAPIKey =0
+    successfulDBDownload =0
+    isAlive =0
+    successfulUpload =0
+    lockCycle = 0
     APIKey = ''
-
+    
     ##Temp while we get killswitch ready
     isAlive = 1
     while not rospy.is_shutdown():
-        lockCycle = 0
+        #lockCycle = 0
 
-        while not lockCycle:
-            isDone =
+        while not rospy.is_shutdown():#lockCycle:
+           # isDone = 0
             if not hasAPIKey:
                 rospy.loginfo("Acquiring API Key")
-                lockCycle = 1
-                APIKey = getAPIKey()
+                #lockCycle = 1
+                APIKey = ilocator_pythonLib.getAPIKey()
                 rospy.loginfo("API key acquired: "+APIKey)
                 if APIKey == '': #Error acquiring API Key
                     pub.publish("api-fail")
                 else:
                     pub.publish("api-success")
                     hasAPIKey = 1
-
+            '''
             if not successfulDBDownload:
                 rospy.loginfo("Attempting database download")
-                successfulDBDownload = getDBObjects(APIKey)
+                successfulDBDownload = ilocator_pythonLib.getDBObjects(APIKey)
                 if successfulDBDownload: #Error acquiring API Key
                     pub.publish("ready")
                     rospy.loginfo("Database downloaded, ready to drive.")
                 else:
                     pub.publish("db-down-success")
                     rospy.loginfo("Database download failed.")
-                lockCycle = 1
-
+                #lockCycle = 1
+            '''
             if isAlive and not isDone:
                 pub.publish("driving")
+                rospy.loginfo("We're driving now")
             if not isAlive:
                 pub.publish("emergency")
-                ros.loginfo("Emergency state entered, loss of keep alive signal.")
+                rospy.loginfo("Emergency state entered, loss of keep alive signal.")
 
             if isDone:
                 pub.publish("finished")
                 if successfulUpload == 0:
-                    successfulUpload = syncToDB(APIKey)
+                    successfulUpload = ilocator_pythonLib.syncToDB(APIKey)
                     rospy.loginfo("Attempting database sync...")
                 if successfulUpload:
                     rospy.loginfo("Successfulyy uploaded, run is complete.")
 
         rospy.spin()
+        
+stateNode()

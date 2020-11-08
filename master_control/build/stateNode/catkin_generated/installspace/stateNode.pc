@@ -1,0 +1,8 @@
+prefix=/home/anders/catkin_ws/install
+
+Name: stateNode
+Description: Description of stateNode
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

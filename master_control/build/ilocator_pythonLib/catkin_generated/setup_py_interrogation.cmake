@@ -1,0 +1,7 @@
+set(ilocator_pythonLib_SETUP_PY_SETUP_MODULE "distutils.core")
+set(ilocator_pythonLib_SETUP_PY_VERSION "0.0.0")
+set(ilocator_pythonLib_SETUP_PY_SCRIPTS "")
+set(ilocator_pythonLib_SETUP_PY_PACKAGES "ilocator_pythonLib")
+set(ilocator_pythonLib_SETUP_PY_PACKAGE_DIRS "src/ilocator_pythonLib")
+set(ilocator_pythonLib_SETUP_PY_MODULES "")
+set(ilocator_pythonLib_SETUP_PY_MODULE_DIRS "")
