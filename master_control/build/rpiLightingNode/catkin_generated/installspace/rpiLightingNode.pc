@@ -1,8 +1,0 @@
-prefix=/home/anders/catkin_ws/install
-
-Name: rpiLightingNode
-Description: Description of rpiLightingNode
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
