@@ -1,0 +1,3 @@
+[submodule "ros-mpu9250-ahrs"]
+	path = ros-mpu9250-ahrs
+	url = https://github.com/bjajoh/ros-mpu9250-ahrs

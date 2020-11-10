@@ -10,7 +10,7 @@ rosdep install --from-paths src --ignore-src -r
 
 Generate Correction Data NEMA code https://nmeagen.org/
 
-LEDs with Pi: https://tutorials-raspberrypi.com/connect-control-raspberry-pi-ws2812-rgb-led-strips/
+LEDs with Pi: https://learn.adafruit.com/neopixels-on-raspberry-pi/python-usage
 
 
 ### Running the camera
