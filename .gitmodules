@@ -1,3 +1,12 @@
 [submodule "ros-mpu9250-ahrs"]
 	path = ros-mpu9250-ahrs
 	url = https://github.com/bjajoh/ros-mpu9250-ahrs
+[submodule "nmea_msgs"]
+	path = nmea_msgs
+	url = https://github.com/ros-drivers/nmea_msgs.git
+[submodule "geographic_info"]
+	path = geographic_info
+	url = https://github.com/ros-geographic-info/geographic_info
+[submodule "uiid"]
+	path = uiid
+	url = https://github.com/ros-geographic-info/unique_identifier
