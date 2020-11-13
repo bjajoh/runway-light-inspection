@@ -1,0 +1,5 @@
+float32 point_easting
+float32 point_northing
+float32 uncertainty_major
+float32 uncertainty_minor
+float32 uncertainty_orientation
