@@ -10,6 +10,10 @@ rosdep install --from-paths src --ignore-src -r
 
 Generate Correction Data NEMA code https://nmeagen.org/
 
+LEDs with Pi: https://learn.adafruit.com/neopixels-on-raspberry-pi/python-usage
+
+Use catkin build instead of catkin_make: https://catkin-tools.readthedocs.io/en/latest/installing.html
+
 
 ### Running the camera
 ```
@@ -18,7 +22,9 @@ roslaunch common perception.launch
 ```
 roslaunch common gnss.launch
 ```
-
+```
+roslaunch common state_estimation.launch
+```
 ``` 
 roslaunch ueye mono.launch
 ``` 
