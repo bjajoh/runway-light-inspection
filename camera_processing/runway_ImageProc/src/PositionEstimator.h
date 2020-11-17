@@ -16,11 +16,15 @@
 cv::RNG rng(12345);
 bool show_images;
 int crop_top, crop_bottom, maxWidth, maxHeight, uncertaintyPixels;
+cv::Point2f src_tl(496, 936), src_tr(1531, 935), src_br(1974, 1053), src_bl(38,1053); //NEEDS TO BE CALIBRATED
 cv::Mat transformM, cameraMatrix, distCoeff;
+float transformGNSS_x = 0, transformGNSS_y = 0; //Set these parameters to reflect the Camera to GNSS transformation
 
 float map(float x, float in_min, float in_max, float out_min, float out_max);
+void initializeCameraCalibration();
 void initializeTransformMatrix();
 void initializeUndistortMatrixes();
+
 std::vector<cv::Point2f> getRelativePositions(cv::Mat image);
 class SubscribeAndPublish
 {

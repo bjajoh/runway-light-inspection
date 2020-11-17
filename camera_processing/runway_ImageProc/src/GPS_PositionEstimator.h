@@ -9,10 +9,12 @@
 #include <runway_ImageProc/MetersPointsArrays.h>
 #include <runway_ImageProc/UtmCoordinates.h>
 #include <math.h>
+#include <mutex>
 #include <utility>
 
 #define EARTHS_RADIUS 6378137
 #define PI 3.14159265359
+std::mutex mtx;
 
 class SubscribeAndPublish
 {

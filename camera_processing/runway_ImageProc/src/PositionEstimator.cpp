@@ -7,9 +7,8 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 
 void initializeTransformMatrix()
 {
-    //Initialize initial image points
+    //Initialize initial im age points
     std::vector <cv::Point2f> srcPoints;
-    cv::Point2f src_tl(409, 299 - crop_top), src_tr(1486, 285 - crop_top), src_br(1804, 360 - crop_top), src_bl(102,380 -crop_top); //NEEDS TO BE CALIBRATED
     srcPoints.push_back(src_tl);
     srcPoints.push_back(src_tr);
     srcPoints.push_back(src_br);
@@ -43,6 +42,13 @@ void initializeUndistortMatrixes()
     distCoeff_c.copyTo(distCoeff);
 }
 
+void initializeCameraCalibration()
+{
+    crop_top = std::min(src_tl.y,src_tr.y) - 100;
+    crop_bottom = std::max(src_bl.y,src_br.y) + 100;
+    src_tl.y -= crop_top; src_br.y-=crop_top; src_bl.y-=crop_top; src_tr.y-=crop_top;
+}
+
 std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
 {
     //Undistort image
@@ -53,7 +59,7 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
     cv::Rect cropROI(cv::Point(0, crop_top), cv::Point(2056, crop_bottom));
     undistorted_image = undistorted_image(cropROI);
     //Threshold
-    cv::threshold(undistorted_image, undistorted_image, 130, 255, 0);
+    cv::threshold(undistorted_image, undistorted_image, 180, 255, 0);
     //Find contours
     std::vector <std::vector<cv::Point>> contours;
     std::vector <cv::Vec4i> hierarchy;
@@ -66,10 +72,11 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
     {
         mu[i] = moments(contours[i]);
         float lightCenter_y = static_cast<float>(mu[i].m01 / (mu[i].m00 + 1e-5));
-        if (lightCenter_y >= 285 - crop_top && lightCenter_y <= 380 - crop_top)
+        if (lightCenter_y >= std::min(src_tr.y,src_tl.y) && lightCenter_y <= std::max(src_bl.y,src_br.y))
         {
             float lightCenter_x = static_cast<float>(mu[i].m10 / (mu[i].m00 + 1e-5));
             lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y));
+            /*
             if (lightCenter_y - uncertaintyPixels < 0)
                 lightCenter.push_back(cv::Point2f(lightCenter_x, 0));
             else
@@ -86,6 +93,7 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
                 lightCenter.push_back(cv::Point2f(0, lightCenter_y));
             else
                 lightCenter.push_back(cv::Point2f(lightCenter_x - uncertaintyPixels, lightCenter_y));
+                */
         }
     }
     std::vector <cv::Point2f> lightPositions;
@@ -95,9 +103,10 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
         //Map light centers to approximate position in meters relative to camera
         for (size_t i = 0; i < lightCenter_transformed.size(); i++)
         {
-            float lightX = map(lightCenter_transformed[i].x, 0, maxWidth - 1, -7.02, 7.02); //NEEDS TO BE CALIBRATED
-            float lightY = map(maxHeight - lightCenter_transformed[i].y, 0, maxHeight, 7.43,
-                               12.885); //NEEDS TO BE CALIBRATED
+            float lightX = map(lightCenter_transformed[i].x, 0, maxWidth - 1, -2.86, 2.86); //NEEDS TO BE CALIBRATED
+            float lightY = map(maxHeight - lightCenter_transformed[i].y, 0, maxHeight - 1, 5.52,
+                               10.14); //NEEDS TO BE CALIBRATED
+            std::cout << lightCenter_transformed[i].x << " " << maxHeight - lightCenter_transformed[i].y << std::endl;
             std::cout << "Light " << i << ": " << lightX << " " << lightY << std::endl;
             lightPositions.push_back(cv::Point2f(lightX, lightY));
         }
@@ -170,8 +179,10 @@ void SubscribeAndPublish::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 SubscribeAndPublish::SubscribeAndPublish()
 {
     //Initialize matrices
+    initializeCameraCalibration()
     initializeTransformMatrix();
     initializeUndistortMatrixes();
+
     //Points publishing topic
     pub = nh.advertise<runway_ImageProc::MetersPointsArrays>("/image_processing/relative_meters", 1);
 
@@ -183,8 +194,6 @@ int main(int argc, char **argv)
 {
     //Param reading
     show_images = true;
-    crop_top = 270;
-    crop_bottom = 400;
     uncertaintyPixels = 10;
     //-------------
     std::cout<<"Node initialization initiated B-)\n";

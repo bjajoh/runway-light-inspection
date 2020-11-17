@@ -26,8 +26,10 @@ void SubscribeAndPublish::metersCallback(const runway_ImageProc::MetersPointsArr
 void SubscribeAndPublish::gnssCallback(const runway_ImageProc::MetersPointsArrays::ConstPtr& msg)
 {
     std::cout<<"GNSS callback called\n";
+    mtx.lock();
     gnss_lat = 57.033435;
     gnss_long = 9.922650;
+    mtx.unlock();
     std::cout<<"GNSS coordinates updated. Lat: "<<gnss_lat<<" Long: "<<gnss_long<<std::endl;
 }
 
@@ -47,8 +49,10 @@ SubscribeAndPublish::SubscribeAndPublish()
 std::pair<float,float> SubscribeAndPublish::gps_transform(float x, float y)
 {
     std::pair<float,float> gps_loc;
+    mtx.lock();
     gps_loc.first = gnss_lat + (180/PI)*(y/EARTHS_RADIUS);
     gps_loc.second = gnss_long + (180/PI)*(x/EARTHS_RADIUS)/std::cos(PI/180.0*gnss_lat);
+    mtx.unlock();
     //(x2,y2)=(x1+l⋅cos(a),y1+l⋅sin(a))
     return gps_loc;
 }
@@ -57,5 +61,6 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "GPS_Position_Estimator");
     SubscribeAndPublish SAPObject;
-    ros::spin();
+    ros::MultiThreadedSpinner spinner(2); // Use 4 threads
+    spinner.spin(); // spin() will not return until the node has been shutdown
 }
