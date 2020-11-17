@@ -5,8 +5,12 @@ https://www.ilocator.com/proposal//cover.php?ProposalID=6ymasXDnLmC3NSEPzF7ANSlG
 ### Install
 Install all dependencies:
 ```
+git submodule update --init --recursive
+```
+```
 rosdep install --from-paths src --ignore-src -r
 ```
+
 
 Generate Correction Data NEMA code https://nmeagen.org/
 
@@ -21,6 +25,9 @@ roslaunch common perception.launch
 ```
 ```
 roslaunch common gnss.launch
+```
+```
+roslaunch common rtk.launch
 ```
 ```
 roslaunch common state_estimation.launch
