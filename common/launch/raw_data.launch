@@ -1,4 +1,5 @@
 <launch>
 	<include file="$(find common)/launch/tf.launch"/>
+	<include file="$(find mpu9250-driver)/launch/mpu9250.launch"/>
 	<include file="$(find ublox_gps)/launch/ublox_zed-f9p.launch"/>
 </launch>

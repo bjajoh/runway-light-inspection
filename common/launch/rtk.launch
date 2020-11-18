@@ -1,4 +1,5 @@
 <launch>
 	<include file="$(find common)/launch/tf.launch"/>
 	<include file="$(find ublox_gps)/launch/ublox_zed-f9p.launch"/>
+	<include file="$(find ntrip_ros)/launch/ntrip_ros.launch"/>
 </launch>

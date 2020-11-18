@@ -45,6 +45,7 @@
       <remap from="odometry/filtered" to=""/>
       <remap from="gps/fix" to=""/>
       -->
+      <remap from="gps/fix" to="ublox_gps/fix"/>
 
   </node>
 </launch>
