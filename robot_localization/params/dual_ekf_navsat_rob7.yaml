@@ -3,7 +3,7 @@
 ekf_se_odom:
   frequency: 30
   sensor_timeout: 0.1
-  two_d_mode: false
+  two_d_mode: true
   transform_time_offset: 0.0
   transform_timeout: 0.0
   print_diagnostics: true
@@ -34,7 +34,7 @@ ekf_se_odom:
   imu0_differential: false
   imu0_relative: false
   imu0_queue_size: 10
-  imu0_remove_gravitational_acceleration: true
+  imu0_remove_gravitational_acceleration: false
 
   use_control: false
 
@@ -73,7 +73,7 @@ ekf_se_odom:
 ekf_se_map:
   frequency: 30
   sensor_timeout: 0.1
-  two_d_mode: false
+  two_d_mode: true
   transform_time_offset: 0.0
   transform_timeout: 0.0
   print_diagnostics: true
@@ -104,7 +104,7 @@ ekf_se_map:
   imu0_differential: false
   imu0_relative: false
   imu0_queue_size: 10
-  imu0_remove_gravitational_acceleration: true
+  imu0_remove_gravitational_acceleration: false
 
   use_control: false
 
@@ -143,10 +143,10 @@ ekf_se_map:
 navsat_transform:
   frequency: 30
   delay: 3.0
-  magnetic_declination_radians: 0.0429351  # For lat/long 55.944831, -3.186998
+  magnetic_declination_radians: 3.50000000  # Aalborg
   yaw_offset: 1.570796327  # IMU reads 0 facing magnetic north, not east
-  zero_altitude: false
-  broadcast_utm_transform: true
+  zero_altitude: true
+  broadcast_utm_transform: false
   publish_filtered_gps: true
   use_odometry_yaw: false
   wait_for_datum: false
