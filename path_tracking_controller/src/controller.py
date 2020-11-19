@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-PKG = 'path_tracking_controller'
+PKG = 'ilocator_control'
 import roslib; roslib.load_manifest(PKG)
 import rospkg
 from geometry_msgs.msg  import Twist
@@ -9,11 +9,13 @@ from turtlesim.msg import Pose
 import numpy as np
 import os
 from utils.pure_pursuit import purePursuitController
+from robot_localization.srv import *
+from geographic_msgs.msg import GeoPoint
 
 class ilocatorbot():
 	def __init__(self):
 	    #Creating our node,publisher and subscriber.
-	    rospy.init_node('path_tracking_controller', anonymous=True)
+	    rospy.init_node('ilocatorbot_controller', anonymous=True)
 	    self.velocity_publisher = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 	    self.control_status_publisher = rospy.Publisher('control_status',String,queue_size=10)
 	    self.pose_subscriber = rospy.Subscriber('/turtle1/pose', Pose, self.callback)
@@ -24,10 +26,29 @@ class ilocatorbot():
 	    self.lookahead = 0.5
 
 	    # Read the path.
-	    self.path = np.genfromtxt(os.path.join(rospkg.RosPack().get_path('ilocator_control'),'data/path.csv'), delimiter = ',')
+	    self.path = []
+	    self.pathFileName = os.path.join(rospkg.RosPack().get_path('ilocator_control'),'data/path.csv')
+	    self.loadPath()
 
 	    # Set up the rate.
 	    self.rate = rospy.Rate(10)
+
+    def loadPath(self):
+        lat_long_points = np.genfromtxt(self.pathFileName, delimiter = ',')
+        rospy.wait_for_service('fromLL')
+        transformation_method = rospy.ServiceProxy('fromLL', FromLL)
+        try:
+            for gps_point in lat_long_points:
+                lat_long = GeoPoint()
+                lat_long.latitude = gps_point[0]
+                lat_long.longitude = gps_point[1]
+                lat_long.altitude = 0.0
+                response = transformation_method(lat_long) # maybe we need to pass a special message
+                self.path.append([response.map_point.x,response.map_point.y])
+            self.control_status_publisher.publish('Path loaded')
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+
 
 	#Callback function implementing the pose value received
 	def callback(self, data):
