@@ -5,7 +5,7 @@ import roslib; roslib.load_manifest(PKG)
 import rospkg
 from geometry_msgs.msg  import Twist
 from std_msgs.msg import String
-from turtlesim.msg import Pose
+from nav_msgs.msg import Odometry
 import numpy as np
 import os
 from utils.pure_pursuit import purePursuitController
@@ -16,10 +16,10 @@ class ilocatorbot():
 	def __init__(self):
 	    #Creating our node,publisher and subscriber.
 	    rospy.init_node('ilocatorbot_controller', anonymous=True)
-	    self.velocity_publisher = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
+	    self.velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 	    self.control_status_publisher = rospy.Publisher('control_status',String,queue_size=10)
-	    self.pose_subscriber = rospy.Subscriber('/turtle1/pose', Pose, self.callback)
-	    self.pose = Pose()
+	    self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
+	    self.robot_pos = Odometry()
 
 	    # Set up the velocity and lookahead distance.
 	    self.velocity = 0.3
@@ -52,16 +52,16 @@ class ilocatorbot():
 
 	#Callback function implementing the pose value received
 	def callback(self, data):
-	    self.pose = data
-	    self.pose.x = round(self.pose.x, 4)
-	    self.pose.y = round(self.pose.y, 4)
+	    self.robot_pos = data
+	    self.robot_pos.pose.pose.position.x = round(self.robot_pos.pose.pose.position.x, 4)
+	    self.robot_pos.pose.pose.position.y = round(self.robot_pos.pose.pose.position.y, 4)
 
 
 	def run(self):
 		p1 = 0
 		p2 = 1
 		while p2 < len(self.path):
-			robot_pos = [self.pose.x, self.pose.y, self.pose.theta]
+			robot_pos = [self.robot_pos.pose.pose.position.x, self.robot_pos.pose.pose.position.y, self.robot_pos.pose.pose.orientation.x]
 
 			start_point = self.path[p1]
 			end_point = self.path[p2]
