@@ -87,7 +87,7 @@ namespace RobotLocalization
     nh_priv.param("publish_filtered_gps", publish_gps_, false);
     nh_priv.param("use_odometry_yaw", use_odometry_yaw_, false);
     nh_priv.param("wait_for_datum", use_manual_datum_, false);
-    nh_priv.param("use_local_cartesian", use_local_cartesian_, false);
+    nh_priv.param("use_local_cartesian", use_local_cartesian_, true);
     nh_priv.param("frequency", frequency, 10.0);
     nh_priv.param("delay", delay, 0.0);
     nh_priv.param("transform_timeout", transform_timeout, 0.0);
