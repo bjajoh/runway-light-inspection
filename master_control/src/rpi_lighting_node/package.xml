@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>stateNode</name>
+  <name>rpiLightingNode</name>
   <version>0.0.0</version>
-  <description>The stateNode package</description>
+  <description>The rpiLightingNode package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/stateNode</url> -->
+  <!-- <url type="website">http://wiki.ros.org/rpiLightingNode</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -49,18 +49,15 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>datetime</build_depend>
-  <build_depend>ilocator_pythonLib</build_depend>
+  <build_depend>board</build_depend>
+  <build_depend>neopixel</build_depend>
   <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_export_depend>datetime</build_export_depend>
-  <build_export_depend>ilocator_pythonLib</build_export_depend>
+  <build_export_depend>board</build_export_depend>
+  <build_export_depend>neopixel</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <exec_depend>datetime</exec_depend>
-  <exec_depend>ilocator_pythonLib</exec_depend>
+  <exec_depend>board</exec_depend>
+  <exec_depend>neopixel</exec_depend>
   <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

@@ -2,12 +2,12 @@
 import rospy
 from datetime import datetime, timedelta, time
 from std_msgs.msg import String
-import ilocator_pythonLib
+import ilocator_python_lib
 
 isDone = 0
 kswitchStatus = 1
 lastKeepAlive = 0
-    
+
 def trajCallback(data):
     #Quick callback function that just returns the value. Using this for the
     #subscriber stuff since new subscribed messages can be dropped in as arguments.
@@ -19,7 +19,7 @@ def killswitchCallback(data):
     if data.data == "alive":
         kswitchStatus = 0
 
-def stateNode():
+def state_node():
     pub = rospy.Publisher('state', String, queue_size = 10)
     rospy.init_node('stateNode')
     rospy.Subscriber("killswitch", String, killswitchCallback)
@@ -33,7 +33,7 @@ def stateNode():
     successfulUpload =0
     lockCycle = 0
     APIKey = ''
-    
+
     ##Temp while we get killswitch ready
     isAlive = 1
     while not rospy.is_shutdown():
@@ -79,5 +79,5 @@ def stateNode():
                     rospy.loginfo("Successfulyy uploaded, run is complete.")
 
         rospy.spin()
-        
-stateNode()
+
+state_node()
