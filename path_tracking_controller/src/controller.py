@@ -11,6 +11,8 @@ import os
 from robot_localization.srv import *
 from geographic_msgs.msg import GeoPoint
 import numpy as np
+from visualization_msgs.msg import Marker
+from visualization_msgs.msg import MarkerArray
 
 
 def purePursuitController(p1, p2, velocity, robot_pos, l):	
@@ -56,6 +58,7 @@ class ilocatorbot():
                 self.velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
                 self.control_status_publisher = rospy.Publisher('control_status',String,queue_size=10)
                 self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
+                self.publisher = rospy.Publisher('visualization_marker', Marker, queue_size=10)
                 self.robot_pos = Odometry()
 
             # Set up the velocity and lookahead distance.
@@ -103,6 +106,23 @@ class ilocatorbot():
 
                         start_point = self.path[p1]
                         end_point = self.path[p2]
+
+                        marker = Marker()
+                        marker.header.frame_id = "map"
+                        marker.type = marker.SPHERE
+                        marker.action = marker.ADD
+                        marker.scale.x = 1.1
+                        marker.scale.y = 1.0
+                        marker.scale.z = 1.0
+                        marker.color.a = 1.0
+                        marker.color.r = 1.0
+                        marker.color.g = 1.0
+                        marker.color.b = 0.0
+                        marker.pose.orientation.w = 1.0
+                        marker.pose.position.x = start_point[0]
+                        marker.pose.position.y = start_point[1]
+                        marker.pose.position.z = 0
+
                         v,omega = purePursuitController(start_point, end_point, self.velocity, robot_pos,self.lookahead)
                         # v,omega = self.pidController(end_point, self.velocity, robot_pos)
                         vel_msg = Twist()
@@ -118,6 +138,7 @@ class ilocatorbot():
                 #Publishing our vel_msg
                         self.velocity_publisher.publish(vel_msg)
                         self.control_status_publisher.publish('On path.')
+                        self.publisher.publish(marker)
                         self.rate.sleep()
 
                         # If at the goal point, change the points fed to the controller.
