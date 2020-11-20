@@ -7,6 +7,8 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 
 void initializeTransformMatrix()
 {
+    /*
+     *Old version
     //Initialize initial im age points
     std::vector <cv::Point2f> srcPoints;
     srcPoints.push_back(src_tl);
@@ -28,6 +30,22 @@ void initializeTransformMatrix()
     dstPoints.push_back(dst_bl);
     //Compute perspective transform matrix
     transformM = cv::getPerspectiveTransform(srcPoints, dstPoints);
+     */
+    //Initialize initial image points
+    std::vector <cv::Point2f> srcPoints;
+    srcPoints.push_back(src_tl);
+    srcPoints.push_back(src_tr);
+    srcPoints.push_back(src_br);
+    srcPoints.push_back(src_bl);
+    //Initialize real life points
+    std::vector <cv::Point2f> dstPoints;
+    dstPoints.push_back(dst_tl);
+    dstPoints.push_back(dst_tr);
+    dstPoints.push_back(dst_br);
+    dstPoints.push_back(dst_bl);
+    //Compute perspective transform matrix
+    cv::Mat test = cv::getPerspectiveTransform(srcPoints, dstPoints);
+    test.copyTo(transformM);
 }
 
 void initializeUndistortMatrixes()
@@ -44,8 +62,8 @@ void initializeUndistortMatrixes()
 
 void initializeCameraCalibration()
 {
-    crop_top = std::min(src_tl.y,src_tr.y) - 100;
-    crop_bottom = std::max(src_bl.y,src_br.y) + 100;
+    crop_top = std::min(src_tl.y,src_tr.y) - crop_topMargin;
+    crop_bottom = std::max(src_bl.y,src_br.y) + crop_bottomMargin;
     src_tl.y -= crop_top; src_br.y-=crop_top; src_bl.y-=crop_top; src_tr.y-=crop_top;
 }
 
@@ -54,17 +72,15 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
     //Undistort image
     cv::Mat undistorted_image;
     cv::undistort(image, undistorted_image, cameraMatrix, distCoeff);
-    //cv::imwrite("C:/Users/rrung/source/repos/Masters/IDS Camera Image Collection/IDS Camera Image Collection/Pictures/Square_0_undistorted.JPG", unidstortedImage);
     //Crop the image to a particular band in the image
-    cv::Rect cropROI(cv::Point(0, crop_top), cv::Point(2056, crop_bottom));
-    undistorted_image = undistorted_image(cropROI);
+    //cv::Rect cropROI(cv::Point(0, crop_top), cv::Point(2056, crop_bottom));
+    //undistorted_image = undistorted_image(cropROI);
     //Threshold
-    cv::threshold(undistorted_image, undistorted_image, 180, 255, 0);
+    cv::threshold(undistorted_image, undistorted_image, thresholdValue, 255, 0);
     //Find contours
     std::vector <std::vector<cv::Point>> contours;
     std::vector <cv::Vec4i> hierarchy;
     cv::findContours(undistorted_image, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-    //cv::warpPerspective(undistorted_image, undistorted_image, transformM, cv::Size(maxWidth, maxHeight));
     //Calculate moments and light center pixels
     std::vector <cv::Moments> mu(contours.size());
     std::vector <cv::Point2f> lightCenter, lightCenter_transformed;
@@ -72,8 +88,6 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
     {
         mu[i] = moments(contours[i]);
         float lightCenter_y = static_cast<float>(mu[i].m01 / (mu[i].m00 + 1e-5));
-        if (lightCenter_y >= std::min(src_tr.y,src_tl.y) && lightCenter_y <= std::max(src_bl.y,src_br.y))
-        {
             float lightCenter_x = static_cast<float>(mu[i].m10 / (mu[i].m00 + 1e-5));
             lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y));
             /*
@@ -94,22 +108,26 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
             else
                 lightCenter.push_back(cv::Point2f(lightCenter_x - uncertaintyPixels, lightCenter_y));
                 */
-        }
+        //}
     }
     std::vector <cv::Point2f> lightPositions;
     if (!lightCenter.empty())
     {
-        cv::perspectiveTransform(lightCenter, lightCenter_transformed, transformM);
+        cv::perspectiveTransform(lightCenter, lightPositions, transformM);
+        /* Old method
         //Map light centers to approximate position in meters relative to camera
         for (size_t i = 0; i < lightCenter_transformed.size(); i++)
         {
-            float lightX = map(lightCenter_transformed[i].x, 0, maxWidth - 1, -2.86, 2.86); //NEEDS TO BE CALIBRATED
+            float lightX = map(lightCenter_transformed[i].x, 0, maxWidth - 1, -2.86, 2.86) + transformGNSS_x; //NEEDS TO BE CALIBRATED
             float lightY = map(maxHeight - lightCenter_transformed[i].y, 0, maxHeight - 1, 5.52,
-                               10.14); //NEEDS TO BE CALIBRATED
+                               10.14) + transformGNSS_y; //NEEDS TO BE CALIBRATED
             std::cout << lightCenter_transformed[i].x << " " << maxHeight - lightCenter_transformed[i].y << std::endl;
             std::cout << "Light " << i << ": " << lightX << " " << lightY << std::endl;
             lightPositions.push_back(cv::Point2f(lightX, lightY));
         }
+         */
+        for(int i = 0; i < lightPositions.size(); i++)
+            std::cout << "Light " << i << ": " << lightPositions[i].x << " " << lightPositions[i].y << std::endl;
     }
     //Show image
     if (show_images)
@@ -122,11 +140,13 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
         {
             cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
             //drawContours(drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+            /*
             cv::circle(drawing, lightCenter_transformed[i * 5], 4, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 1], 2, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 2], 2, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 3], 2, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 4], 2, color, -1);
+             */
         }
         cv::imshow("Final image drawing", drawing);
         cv::imshow("Final image", undistorted_image);
@@ -178,8 +198,21 @@ void SubscribeAndPublish::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 SubscribeAndPublish::SubscribeAndPublish()
 {
+    //Param reading
+    /*
+    nh.getParam("front_showImages",show_images);
+    nh.getParam("front_uncertaintyPixels",uncertaintyPixels);
+    nh.getParam("front_thresholdValue",thresholdValue);
+    nh.getParam("front_cropTopMargin",crop_topMargin);
+    nh.getParam("front_cropBottomMargin",crop_bottomMargin);
+     */
+    show_images = true;
+    uncertaintyPixels = 10;
+    thresholdValue = 150;
+    crop_topMargin = 40;
+    crop_bottomMargin = 40;
     //Initialize matrices
-    initializeCameraCalibration()
+    initializeCameraCalibration();
     initializeTransformMatrix();
     initializeUndistortMatrixes();
 
@@ -192,12 +225,8 @@ SubscribeAndPublish::SubscribeAndPublish()
 
 int main(int argc, char **argv)
 {
-    //Param reading
-    show_images = true;
-    uncertaintyPixels = 10;
-    //-------------
     std::cout<<"Node initialization initiated B-)\n";
-    ros::init(argc, argv, "Image_Processing");
+    ros::init(argc, argv, "Image_Processing_Front");
     SubscribeAndPublish SAPObject;
     ros::spin();
 }

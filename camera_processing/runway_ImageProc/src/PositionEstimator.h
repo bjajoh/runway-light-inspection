@@ -15,8 +15,10 @@
 #include <runway_ImageProc/MetersPointsArrays.h>
 cv::RNG rng(12345);
 bool show_images;
-int crop_top, crop_bottom, maxWidth, maxHeight, uncertaintyPixels;
-cv::Point2f src_tl(496, 936), src_tr(1531, 935), src_br(1974, 1053), src_bl(38,1053); //NEEDS TO BE CALIBRATED
+int crop_top, crop_bottom, crop_topMargin, crop_bottomMargin, maxWidth, maxHeight, uncertaintyPixels, thresholdValue;
+cv::Point2f src_tl(805, 994), src_tr(1367, 997), src_br(1530, 1072), src_bl(701,1068); //NEEDS TO BE CALIBRATED
+cv::Point2f dst_tl(-256.5, 801), dst_tr(256.5, 801), dst_br(256.5, 543), dst_bl(-256.5,543); //NEEDS TO BE CALIBRATED
+
 cv::Mat transformM, cameraMatrix, distCoeff;
 float transformGNSS_x = 0, transformGNSS_y = 0; //Set these parameters to reflect the Camera to GNSS transformation
 
