@@ -14,11 +14,11 @@ ekf_se_odom:
   base_link_frame: base_link
   world_frame: odom
 
-  twist0: ublox_gps/fix_velocity
+  twist0: /odrive_basic_node/twist_estimation
   twist0_config: [false, false, false,
                   false, false, false,
                   true,  true,  true,
-                  false, false, false,
+                  true,  true,  true,
                   false, false, false]
   twist0_queue_size: 3
   twist0_rejection_threshold: 2
@@ -84,11 +84,11 @@ ekf_se_map:
   base_link_frame: base_link
   world_frame: map
 
-  twist0: ublox_gps/fix_velocity
+  twist0: /odrive_basic_node/twist_estimation
   twist0_config: [false, false, false,
                   false, false, false,
                   true,  true,  true,
-                  false, false, false,
+                  true,  true,  true,
                   false, false, false]
   twist0_queue_size: 3
   twist0_rejection_threshold: 2
