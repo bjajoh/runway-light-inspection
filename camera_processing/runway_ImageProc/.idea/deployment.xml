@@ -7,6 +7,9 @@
           <mappings>
             <mapping deploy="/tmp/runway_ImageProc" local="$PROJECT_DIR$" />
           </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
+          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>

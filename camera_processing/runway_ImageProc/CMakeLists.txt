@@ -47,7 +47,7 @@ find_package(catkin REQUIRED COMPONENTS
 ##     catkin_package(CATKIN_DEPENDS ...)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
+##   * uncomment the generate_messages entry belows
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
@@ -55,7 +55,7 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    MetersCoordinates.msg
    MetersPointsArrays.msg
-   UtmCoordinates.msg
+   LightCoordinates.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -213,6 +213,8 @@ include_directories(
 
 add_executable(PositionEstimator src/PositionEstimator.cpp)
 add_dependencies(PositionEstimator ${catkin_EXPORTED_TARGETS})
+add_executable(PositionEstimator2 src/PositionEstimator2.cpp)
+add_dependencies(PositionEstimator2 ${catkin_EXPORTED_TARGETS})
 add_executable(GPS_PositionEstimator src/GPS_PositionEstimator.cpp)
 add_dependencies(GPS_PositionEstimator ${catkin_EXPORTED_TARGETS})
 
@@ -220,5 +222,6 @@ find_package(OpenCV 3.2 EXACT REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 add_definitions(-DOPEN_CV_INSTALLED)
 target_link_libraries(PositionEstimator ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(PositionEstimator2 ${catkin_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(GPS_PositionEstimator ${catkin_LIBRARIES} ${OpenCV_LIBS})
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -o3 -pthread -std=c++14")

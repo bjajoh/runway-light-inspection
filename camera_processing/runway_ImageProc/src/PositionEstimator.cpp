@@ -7,44 +7,21 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 
 void initializeTransformMatrix()
 {
-    /*
-     *Old version
-    //Initialize initial im age points
-    std::vector <cv::Point2f> srcPoints;
-    srcPoints.push_back(src_tl);
-    srcPoints.push_back(src_tr);
-    srcPoints.push_back(src_br);
-    srcPoints.push_back(src_bl);
-    //Compute width and height of new image and initalize points
-    float widthA = sqrt(pow(src_br.x - src_bl.x, 2) + pow(src_br.y - src_bl.y, 2));
-    float widthB = sqrt(pow(src_tr.x - src_tl.x, 2) + pow(src_tr.y - src_tl.y, 2));
-    maxWidth = std::max((int) widthA, (int) widthB);
-    float heightA = sqrt(pow(src_tr.x - src_br.x, 2) + pow(src_tr.y - src_br.y, 2));
-    float heightB = sqrt(pow(src_tl.x - src_bl.x, 2) + pow(src_tl.y - src_bl.y, 2));
-    maxHeight = std::max((int) heightA, (int) heightB);
-    std::vector <cv::Point2f> dstPoints;
-    cv::Point2f dst_tl(0, 0), dst_tr(maxWidth - 1, 0), dst_br(maxWidth - 1, maxHeight - 1), dst_bl(0, maxHeight - 1);
-    dstPoints.push_back(dst_tl);
-    dstPoints.push_back(dst_tr);
-    dstPoints.push_back(dst_br);
-    dstPoints.push_back(dst_bl);
-    //Compute perspective transform matrix
-    transformM = cv::getPerspectiveTransform(srcPoints, dstPoints);
-     */
-    //Initialize initial image points
-    std::vector <cv::Point2f> srcPoints;
-    srcPoints.push_back(src_tl);
-    srcPoints.push_back(src_tr);
-    srcPoints.push_back(src_br);
-    srcPoints.push_back(src_bl);
-    //Initialize real life points
-    std::vector <cv::Point2f> dstPoints;
-    dstPoints.push_back(dst_tl);
-    dstPoints.push_back(dst_tr);
-    dstPoints.push_back(dst_br);
-    dstPoints.push_back(dst_bl);
-    //Compute perspective transform matrix
-    cv::Mat test = cv::getPerspectiveTransform(srcPoints, dstPoints);
+    cv::Matx33f homography;
+    pts_dest = {
+            {-129.75, 550.5}, //Top Left
+            {129.75, 550.5},  //Top Right
+            {129.75, 291}, //Bottom Right
+            {-129.75,291}, //Bottom Left
+    };
+    pts_src = {
+            {613, 953}, //Top Left
+            {1442,951}, //Top Right
+            {1814, 1015}, //Bottom Right
+            {237,1016},  //Bottom Left
+    };
+    cv::Mat test = cv::getPerspectiveTransform(pts_src, pts_dest);
+    std::cout<<"Init2: "<<std::endl<<test<<std::endl;
     test.copyTo(transformM);
 }
 
@@ -60,21 +37,14 @@ void initializeUndistortMatrixes()
     distCoeff_c.copyTo(distCoeff);
 }
 
-void initializeCameraCalibration()
-{
-    crop_top = std::min(src_tl.y,src_tr.y) - crop_topMargin;
-    crop_bottom = std::max(src_bl.y,src_br.y) + crop_bottomMargin;
-    src_tl.y -= crop_top; src_br.y-=crop_top; src_bl.y-=crop_top; src_tr.y-=crop_top;
-}
-
 std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
 {
     //Undistort image
     cv::Mat undistorted_image;
     cv::undistort(image, undistorted_image, cameraMatrix, distCoeff);
     //Crop the image to a particular band in the image
-    //cv::Rect cropROI(cv::Point(0, crop_top), cv::Point(2056, crop_bottom));
-    //undistorted_image = undistorted_image(cropROI);
+    cv::Rect cropROI(cv::Point(0, crop_top), cv::Point(2056, crop_bottom));
+    undistorted_image = undistorted_image(cropROI);
     //Threshold
     cv::threshold(undistorted_image, undistorted_image, thresholdValue, 255, 0);
     //Find contours
@@ -89,43 +59,28 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
         mu[i] = moments(contours[i]);
         float lightCenter_y = static_cast<float>(mu[i].m01 / (mu[i].m00 + 1e-5));
             float lightCenter_x = static_cast<float>(mu[i].m10 / (mu[i].m00 + 1e-5));
-            lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y));
-            /*
+            lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y + crop_top));
             if (lightCenter_y - uncertaintyPixels < 0)
-                lightCenter.push_back(cv::Point2f(lightCenter_x, 0));
+                lightCenter.push_back(cv::Point2f(lightCenter_x, 0 + crop_top));
             else
-                lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y - uncertaintyPixels));
+                lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y - uncertaintyPixels + crop_top));
             if (lightCenter_x + uncertaintyPixels > undistorted_image.cols - 1)
-                lightCenter.push_back(cv::Point2f(undistorted_image.cols - 1, lightCenter_y));
+                lightCenter.push_back(cv::Point2f(undistorted_image.cols - 1, lightCenter_y + crop_top));
             else
-                lightCenter.push_back(cv::Point2f(lightCenter_x + uncertaintyPixels, lightCenter_y));
+                lightCenter.push_back(cv::Point2f(lightCenter_x + uncertaintyPixels, lightCenter_y + crop_top));
             if (lightCenter_y + uncertaintyPixels > undistorted_image.rows - 1)
-                lightCenter.push_back(cv::Point2f(lightCenter_x, undistorted_image.rows - 1));
+                lightCenter.push_back(cv::Point2f(lightCenter_x, undistorted_image.rows - 1 + crop_top));
             else
-                lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y + uncertaintyPixels));
+                lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y + uncertaintyPixels+ crop_top));
             if (lightCenter_x - uncertaintyPixels < 0)
-                lightCenter.push_back(cv::Point2f(0, lightCenter_y));
+                lightCenter.push_back(cv::Point2f(0, lightCenter_y + crop_top));
             else
-                lightCenter.push_back(cv::Point2f(lightCenter_x - uncertaintyPixels, lightCenter_y));
-                */
-        //}
+                lightCenter.push_back(cv::Point2f(lightCenter_x - uncertaintyPixels, lightCenter_y + crop_top));
     }
     std::vector <cv::Point2f> lightPositions;
     if (!lightCenter.empty())
     {
         cv::perspectiveTransform(lightCenter, lightPositions, transformM);
-        /* Old method
-        //Map light centers to approximate position in meters relative to camera
-        for (size_t i = 0; i < lightCenter_transformed.size(); i++)
-        {
-            float lightX = map(lightCenter_transformed[i].x, 0, maxWidth - 1, -2.86, 2.86) + transformGNSS_x; //NEEDS TO BE CALIBRATED
-            float lightY = map(maxHeight - lightCenter_transformed[i].y, 0, maxHeight - 1, 5.52,
-                               10.14) + transformGNSS_y; //NEEDS TO BE CALIBRATED
-            std::cout << lightCenter_transformed[i].x << " " << maxHeight - lightCenter_transformed[i].y << std::endl;
-            std::cout << "Light " << i << ": " << lightX << " " << lightY << std::endl;
-            lightPositions.push_back(cv::Point2f(lightX, lightY));
-        }
-         */
         for(int i = 0; i < lightPositions.size(); i++)
             std::cout << "Light " << i << ": " << lightPositions[i].x << " " << lightPositions[i].y << std::endl;
     }
@@ -133,20 +88,17 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
     if (show_images)
     {
         cv::Mat drawing = cv::Mat::zeros(undistorted_image.size(), CV_8UC3);
-        cv::warpPerspective(undistorted_image, drawing, transformM, cv::Size(maxWidth, maxHeight));
+        cv::warpPerspective(undistorted_image, drawing, transformM, cv::Size(undistorted_image.rows,undistorted_image.cols));
         cv::cvtColor(drawing, drawing, cv::COLOR_GRAY2BGR);
         //Draw ligth centers
         for (size_t i = 0; i < lightCenter.size() / 5; i++)
         {
             cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-            //drawContours(drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
-            /*
             cv::circle(drawing, lightCenter_transformed[i * 5], 4, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 1], 2, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 2], 2, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 3], 2, color, -1);
             cv::circle(drawing, lightCenter_transformed[i * 5 + 4], 2, color, -1);
-             */
         }
         cv::imshow("Final image drawing", drawing);
         cv::imshow("Final image", undistorted_image);
@@ -203,16 +155,15 @@ SubscribeAndPublish::SubscribeAndPublish()
     nh.getParam("front_showImages",show_images);
     nh.getParam("front_uncertaintyPixels",uncertaintyPixels);
     nh.getParam("front_thresholdValue",thresholdValue);
-    nh.getParam("front_cropTopMargin",crop_topMargin);
-    nh.getParam("front_cropBottomMargin",crop_bottomMargin);
+    nh.getParam("front_cropTop",crop_top);
+    nh.getParam("front_cropBottom",crop_bottom);
      */
     show_images = true;
     uncertaintyPixels = 10;
-    thresholdValue = 150;
-    crop_topMargin = 40;
-    crop_bottomMargin = 40;
+    thresholdValue = 100;
+    crop_top = 200;
+    crop_bottom = 1500;
     //Initialize matrices
-    initializeCameraCalibration();
     initializeTransformMatrix();
     initializeUndistortMatrixes();
 
