@@ -4,7 +4,7 @@ PKG = 'path_tracking_controller'
 import roslib; roslib.load_manifest(PKG)
 import rospkg
 from geometry_msgs.msg  import Twist
-from std_msgs.msg import String
+from std_msgs.msg import String, Integer
 from nav_msgs.msg import Odometry
 import numpy as np
 import os
@@ -55,15 +55,20 @@ class ilocatorbot():
         def __init__(self):
             #Creating our node,publisher and subscriber.
                 rospy.init_node('path_tracking_controller', anonymous=True)
-                self.velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-                self.control_status_publisher = rospy.Publisher('control_status',String,queue_size=10)
+                self.velocity_publisher = rospy.Publisher('/controller/cmd_vel', Twist, queue_size=10)
+                self.control_status_publisher = rospy.Publisher('/controller/control_status',String,queue_size=10)
+                self.control_status_publisher_int = rospy.Publisher('/controller/control_status_int',Integer,queue_size=10)
                 self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
-                self.publisher = rospy.Publisher('visualization_marker', Marker, queue_size=10)
+                self.publisher = rospy.Publisher('/controller/visualization_marker', Marker, queue_size=10)
                 self.robot_pos = Odometry()
 
             # Set up the velocity and lookahead distance.
                 self.velocity = 0.3
                 self.lookahead = 0.5
+                self.goal_radius = 1.0
+
+            # Set up the control status dict
+                self.control_status_dict = {'on_path': 1, 'obtained_goal': 2}
 
             # Read the path.
                 self.path = []
@@ -138,11 +143,13 @@ class ilocatorbot():
                 #Publishing our vel_msg
                         self.velocity_publisher.publish(vel_msg)
                         self.control_status_publisher.publish('On path.')
+                        self.control_status_publisher_int.publish(self.control_status_dict['on_path'])
                         self.publisher.publish(marker)
                         self.rate.sleep()
 
                         # If at the goal point, change the points fed to the controller.
-                        if np.linalg.norm(robot_pos[:2] - self.path[p2]) < 0.1:
+                        if np.linalg.norm(robot_pos[:2] - self.path[p2]) < self.goal_radius:
+                                self.control_status_publisher.publish('Goal point changed to the next one.')
                                 p1 += 1
                                 p2 += 1
 
@@ -151,6 +158,7 @@ class ilocatorbot():
             vel_msg.angular.z = 0
             self.velocity_publisher.publish(vel_msg)
             self.control_status_publisher.publish('Finished at goal point.')
+            self.control_status_publisher_int.publish(self.control_status_dict['obtained_goal'])
             rospy.spin()
 
 
