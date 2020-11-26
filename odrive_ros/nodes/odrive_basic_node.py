@@ -8,7 +8,7 @@ import tf2_ros
 
 import std_msgs.msg
 from std_msgs.msg import Float64, Int32
-from geometry_msgs.msg import Twist, TransformStamped
+from geometry_msgs.msg import Twist, TwistWithCovariance, TransformStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState
 import std_srvs.srv
@@ -38,7 +38,7 @@ class ODriveNode(object):
             self.angular_vel_limit = 10.0
             self.vel_subscriber = rospy.Subscriber("/cmd_vel",Twist, self.cmd_vel_callback, queue_size=2)
             self.status_pub = rospy.Publisher('/odrive_basic_node/status', std_msgs.msg.String, queue_size=2)
-            self.encoder_pub = rospy.Publisher('/odrive_basic_node/twist_estimation',Twist, queue_size=10)
+            self.encoder_pub = rospy.Publisher('/odrive_basic_node/twist_estimation',TwistWithCovariance, queue_size=10)
             self.status = "disconnected"
             self.interface = ODriveInterfaceAPI()
 
@@ -66,13 +66,16 @@ class ODriveNode(object):
 
 
         def compute_estimated_twist(self, left_angular_vel, right_angular_vel):
-                message = Twist()
+                message = TwistWithCovariance()
                 left_linear_vel = -1.0*left_angular_vel*self.tyre_circumference*2.0
                 right_linear_vel = right_angular_vel*self.tyre_circumference*2.0
                 angular_vel = (right_linear_vel-left_linear_vel)/self.wheel_track*2.0
                 linear_vel = (left_linear_vel+right_linear_vel)/2.0
                 message.linear.x = linear_vel
                 message.angular.z = angular_vel
+                message.covariance.covariance[0] = 0.0001
+                message.covariance.covariance[4] = 0.0001
+                message.covariance.covariance[8] = 0.0001
                 return message
                     
 
