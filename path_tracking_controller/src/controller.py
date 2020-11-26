@@ -4,7 +4,7 @@ PKG = 'path_tracking_controller'
 import roslib; roslib.load_manifest(PKG)
 import rospkg
 from geometry_msgs.msg  import Twist
-from std_msgs.msg import String, Integer
+from std_msgs.msg import String, Int8
 from nav_msgs.msg import Odometry
 import numpy as np
 import os
@@ -57,7 +57,7 @@ class ilocatorbot():
                 rospy.init_node('path_tracking_controller', anonymous=True)
                 self.velocity_publisher = rospy.Publisher('/controller/cmd_vel', Twist, queue_size=10)
                 self.control_status_publisher = rospy.Publisher('/controller/control_status',String,queue_size=10)
-                self.control_status_publisher_int = rospy.Publisher('/controller/control_status_int',Integer,queue_size=10)
+                self.control_status_publisher_int = rospy.Publisher('/controller/control_status_int',Int8,queue_size=10)
                 self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
                 self.publisher = rospy.Publisher('/controller/visualization_marker', Marker, queue_size=10)
                 self.robot_pos = Odometry()

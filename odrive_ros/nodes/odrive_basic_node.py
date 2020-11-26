@@ -7,7 +7,7 @@ import tf_conversions
 import tf2_ros
 
 import std_msgs.msg
-from std_msgs.msg import Float64, Int32
+from std_msgs.msg import Float64, Int32, Int8
 from geometry_msgs.msg import Twist, TwistWithCovariance, TransformStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState
@@ -37,6 +37,7 @@ class ODriveNode(object):
             self.tyre_circumference = 0.2032
             self.angular_vel_limit = 10.0
             self.vel_subscriber = rospy.Subscriber("/cmd_vel",Twist, self.cmd_vel_callback, queue_size=2)
+            self.emergency_obstacle_subscriber = rospy.Subscriber("/emergency_message",Int8, self.emergency_stop_callback, queue_size=2)
             self.status_pub = rospy.Publisher('/odrive_basic_node/status', std_msgs.msg.String, queue_size=2)
             self.status_pub_voltage = rospy.Publisher('/odrive_basic_node/bus_voltage', std_msgs.msg.String, queue_size=2)
             self.encoder_pub = rospy.Publisher('/odrive_basic_node/twist_estimation',TwistWithCovariance, queue_size=10)
@@ -62,6 +63,7 @@ class ODriveNode(object):
 
 
         def release(self):
+                self.interface.drive(0,0)
                 self.interface.release()
                 self.status_pub.publish("Released")
 
@@ -97,6 +99,9 @@ class ODriveNode(object):
                 self.interface.drive(right_angular_vel,left_angular_vel)
                 self.status_pub.publish("Driving... velocities: {},{}".format(left_angular_vel,right_angular_vel))
 
+        def emergency_stop_callback(self):
+                self.release()
+
 
         def encoder_publisher_loop(self):
             rate = rospy.Rate(10)
@@ -111,8 +116,8 @@ class ODriveNode(object):
                     # right_current = str(self.interface.right_current())
                     message = self.compute_estimated_twist(left_vel_estimate, right_vel_estimate)
                     self.encoder_pub.publish(message)
-                    #bus_voltage_message = str(self.interface.bus_voltage())
-                    #self.status_pub_voltage.publish(bus_voltage)
+                    bus_voltage_message = str(self.interface.bus_voltage())
+                    self.status_pub_voltage.publish(bus_voltage_message)
                     rate.sleep()
                 except rospy.ROSInterruptException:
                     break
