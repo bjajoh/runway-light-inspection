@@ -38,6 +38,7 @@ class ODriveNode(object):
             self.angular_vel_limit = 10.0
             self.vel_subscriber = rospy.Subscriber("/cmd_vel",Twist, self.cmd_vel_callback, queue_size=2)
             self.status_pub = rospy.Publisher('/odrive_basic_node/status', std_msgs.msg.String, queue_size=2)
+            self.status_pub_voltage = rospy.Publisher('/odrive_basic_node/bus_voltage', std_msgs.msg.String, queue_size=2)
             self.encoder_pub = rospy.Publisher('/odrive_basic_node/twist_estimation',TwistWithCovariance, queue_size=10)
             self.status = "disconnected"
             self.interface = ODriveInterfaceAPI()
@@ -71,11 +72,14 @@ class ODriveNode(object):
                 right_linear_vel = right_angular_vel*self.tyre_circumference*2.0
                 angular_vel = (right_linear_vel-left_linear_vel)/self.wheel_track*2.0
                 linear_vel = (left_linear_vel+right_linear_vel)/2.0
-                message.linear.x = linear_vel
-                message.angular.z = angular_vel
-                message.covariance.covariance[0] = 0.0001
-                message.covariance.covariance[4] = 0.0001
-                message.covariance.covariance[8] = 0.0001
+                message.twist.twist.linear.x = linear_vel
+                message.twist.twist.angular.z = angular_vel
+                message.twist.covariance[0] = 0.0001
+                message.twist.covariance[7] = 0.0001
+                message.twist.covariance[14] = 0.0001
+                message.twist.covariance[21] = 0.0001
+                message.twist.covariance[28] = 0.0001
+                message.twist.covariance[35] = 0.0001
                 return message
                     
 
@@ -100,13 +104,15 @@ class ODriveNode(object):
                 try:
                     left_vel_estimate = self.interface.left_vel_estimate()
                     right_vel_estimate = self.interface.right_vel_estimate()
-                    print("encoder estimations: {},{}".format(left_vel_estimate,right_vel_estimate))
+                    # print("encoder estimations: {},{}".format(left_vel_estimate,right_vel_estimate))
                     left_pos = str(self.interface.left_pos())
                     right_pos = str(self.interface.right_pos())
-                    left_current = str(self.interface.left_current())
-                    right_current = str(self.interface.right_current())
+                    # left_current = str(self.interface.left_current())
+                    # right_current = str(self.interface.right_current())
                     message = self.compute_estimated_twist(left_vel_estimate, right_vel_estimate)
                     self.encoder_pub.publish(message)
+                    bus_voltage_message = str(self.interface.bus_voltage())
+                    self.status_pub_voltage.publish(bus_voltage)
                     rate.sleep()
                 except rospy.ROSInterruptException:
                     break
