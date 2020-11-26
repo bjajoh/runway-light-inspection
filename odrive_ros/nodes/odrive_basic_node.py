@@ -35,7 +35,7 @@ class ODriveNode(object):
             self.wheel_track = 0.4
             self.m_s_to_value = 1.0
             self.tyre_circumference = 0.2032
-            self.angular_vel_limit = 2.0
+            self.angular_vel_limit = 10.0
             self.vel_subscriber = rospy.Subscriber("/cmd_vel",Twist, self.cmd_vel_callback, queue_size=2)
             self.status_pub = rospy.Publisher('/odrive_basic_node/status', std_msgs.msg.String, queue_size=2)
             self.encoder_pub = rospy.Publisher('/odrive_basic_node/twist_estimation',Twist, queue_size=10)
@@ -118,7 +118,7 @@ def stopEnginesAndRelease():
 def start_odrive(odrive_node):
         rospy.init_node('odrive')
         odrive_node.connect()
-        #odrive_node.engage()
+        odrive_node.engage()
         odrive_node.encoder_publisher_loop()
         # odrive_node.main_loop()
         rospy.on_shutdown(stopEnginesAndRelease)

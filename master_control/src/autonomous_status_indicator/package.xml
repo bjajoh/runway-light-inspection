@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>rpiLightingNode</name>
+  <name>autonomous_status_indicator</name>
   <version>0.0.0</version>
-  <description>The rpiLightingNode package</description>
+  <description>The autonomous_status_indicator package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="anders@todo.todo">anders</maintainer>
+  <maintainer email="bjarne.johannsen@protonmail.com">Bjarne Johannsen</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>GPLv2</license>
 
 
   <!-- Url tags are optional, but multiple are allowed, one per tag -->

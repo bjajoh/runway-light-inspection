@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="autonomous_status_indicator" name="autonomous_status_indicator" type="autonomous_status_indicator.py" 
+        output="screen" required="true" launch-prefix="sudo -E PYTHONPATH=$(env PYTHONPATH)"> </node>
+</launch>
