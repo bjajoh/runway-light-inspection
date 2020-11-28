@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import rospy
 from datetime import datetime
@@ -9,20 +9,41 @@ from rtcm_msgs.msg import Message
 from base64 import b64encode
 from threading import Thread
 
-from httplib import HTTPConnection
-from httplib import IncompleteRead
+from http.client import HTTPConnection
+from http.client import IncompleteRead
 
 ''' This is to fix the IncompleteRead error
     http://bobrochel.blogspot.com/2010/11/bad-servers-chunked-encoding-and.html'''
-import httplib
+import http.client
+
+import requests
+from requests.auth import HTTPBasicAuth
+
+
+
+def NiceToICY(self):
+    class InterceptedHTTPResponse():
+        pass
+    import io
+    line = self.fp.readline().replace(b"ICY 200 OK\r\n", b"HTTP/1.0 200 OK\r\n")
+    InterceptedSelf = InterceptedHTTPResponse()
+    InterceptedSelf.fp = io.BufferedReader(io.BytesIO(line))
+    InterceptedSelf.debuglevel = self.debuglevel
+    InterceptedSelf._close_conn = self._close_conn
+    return ORIGINAL_HTTP_CLIENT_READ_STATUS(InterceptedSelf)
+
+ORIGINAL_HTTP_CLIENT_READ_STATUS = http.client.HTTPResponse._read_status
+http.client.HTTPResponse._read_status = NiceToICY
+
+
 def patch_http_response_read(func):
     def inner(*args):
         try:
             return func(*args)
-        except httplib.IncompleteRead, e:
+        except http.client.IncompleteRead as e:
             return e.partial
     return inner
-httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
+http.client.HTTPResponse.read = patch_http_response_read(http.client.HTTPResponse.read)
 
 class ntripconnect(Thread):
     def __init__(self, ntc):
@@ -31,14 +52,15 @@ class ntripconnect(Thread):
         self.stop = False
 
     def run(self):
-
         headers = {
             'Ntrip-Version': 'Ntrip/2.0',
             'User-Agent': 'NTRIP ntrip_ros',
             'Connection': 'close',
-            'Authorization': 'Basic ' + b64encode(self.ntc.ntrip_user + ':' + str(self.ntc.ntrip_pass))
-        }
+            # 'Authorization': 'Basic ' + b64encode((self.ntc.ntrip_user + ':' + self.ntc.ntrip_pass).encode()).decode('utf-8')
+            'Authorization': 'Basic ' + b64encode((self.ntc.ntrip_user + ':' + self.ntc.ntrip_pass).encode()).decode("ascii")
+            }
         connection = HTTPConnection(self.ntc.ntrip_server)
+        connection.set_debuglevel(1)
         connection.request('GET', '/'+self.ntc.ntrip_stream, self.ntc.nmea_gga, headers)
         response = connection.getresponse()
         if response.status != 200: raise Exception("blah")
@@ -61,20 +83,20 @@ class ntripconnect(Thread):
             ''' This now separates individual RTCM messages and publishes each one on the same topic '''
             data = response.read(1)
             if len(data) != 0:
-                if ord(data[0]) == 211:
-                    buf += data
+                if data[0] == 211:
+                    buf += chr(data[0])
                     data = response.read(2)
-                    buf += data
-                    cnt = ord(data[0]) * 256 + ord(data[1])
+                    buf += chr(data[0])+chr(data[1])
+                    cnt = data[0] * 256 + data[1]
                     data = response.read(2)
-                    buf += data
-                    typ = (ord(data[0]) * 256 + ord(data[1])) / 16
-                    print (str(datetime.now()), cnt, typ)
+                    buf += chr(data[0])+chr(data[1])
+                    typ = (data[0] * 256 + data[1]) / 16
+                    print(str(datetime.now()), cnt, typ)
                     cnt = cnt + 1
                     for x in range(cnt):
                         data = response.read(1)
-                        buf += data
-                    rmsg.message = buf
+                        buf += chr(data[0])
+                    rmsg.message = bytes(buf,'utf-8')
                     rmsg.header.seq += 1
                     rmsg.header.stamp = rospy.get_rostime()
                     self.ntc.pub.publish(rmsg)
