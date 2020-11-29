@@ -56,13 +56,13 @@ class ntripconnect(Thread):
             'Ntrip-Version': 'Ntrip/2.0',
             'User-Agent': 'NTRIP ntrip_ros',
             'Connection': 'close',
-            # 'Authorization': 'Basic ' + b64encode((self.ntc.ntrip_user + ':' + self.ntc.ntrip_pass).encode()).decode('utf-8')
             'Authorization': 'Basic ' + b64encode((self.ntc.ntrip_user + ':' + self.ntc.ntrip_pass).encode()).decode("ascii")
             }
         connection = HTTPConnection(self.ntc.ntrip_server)
         connection.set_debuglevel(1)
         connection.request('GET', '/'+self.ntc.ntrip_stream, self.ntc.nmea_gga, headers)
         response = connection.getresponse()
+        print('content_type: ' + str(response.headers.keys()))
         if response.status != 200: raise Exception("blah")
         buf = ""
         rmsg = Message()
@@ -82,25 +82,31 @@ class ntripconnect(Thread):
 
             ''' This now separates individual RTCM messages and publishes each one on the same topic '''
             data = response.read(1)
+            print(data)
+            print(data[0])
+            print(chr(data[0]))
             if len(data) != 0:
                 if data[0] == 211:
-                    buf += chr(data[0])
+                    buf = []
+                    buf.append(data[0])
                     data = response.read(2)
-                    buf += chr(data[0])+chr(data[1])
+                    buf.append(data[0])
+                    buf.append(data[1])
                     cnt = data[0] * 256 + data[1]
                     data = response.read(2)
-                    buf += chr(data[0])+chr(data[1])
+                    buf.append(data[0])
+                    buf.append(data[1])
                     typ = (data[0] * 256 + data[1]) / 16
                     print(str(datetime.now()), cnt, typ)
                     cnt = cnt + 1
                     for x in range(cnt):
                         data = response.read(1)
-                        buf += chr(data[0])
-                    rmsg.message = bytes(buf,'utf-8')
+                        buf.append(data[0])
+                    rmsg.message = buf
                     rmsg.header.seq += 1
                     rmsg.header.stamp = rospy.get_rostime()
                     self.ntc.pub.publish(rmsg)
-                    buf = ""
+                    buf = []
                 else: print (data)
             else:
                 ''' If zero length data, close connection and reopen it '''

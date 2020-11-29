@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <launch>
   <node pkg="ntrip_ros" type="ntripclient.py" name="ntrip_ros" output="screen">
  	 <param name="rtcm_topic" value="/rtcm"/>
