@@ -62,7 +62,6 @@ class ntripconnect(Thread):
         connection.set_debuglevel(1)
         connection.request('GET', '/'+self.ntc.ntrip_stream, self.ntc.nmea_gga, headers)
         response = connection.getresponse()
-        print('content_type: ' + str(response.headers.keys()))
         if response.status != 200: raise Exception("blah")
         buf = ""
         rmsg = Message()
@@ -82,9 +81,6 @@ class ntripconnect(Thread):
 
             ''' This now separates individual RTCM messages and publishes each one on the same topic '''
             data = response.read(1)
-            print(data)
-            print(data[0])
-            print(chr(data[0]))
             if len(data) != 0:
                 if data[0] == 211:
                     buf = []
