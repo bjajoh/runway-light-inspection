@@ -29,7 +29,7 @@ ekf_se_odom:
                 true,  true,  false,
                 false, false, false,
                 true,  true,  true,
-                true,  true,  true]
+                false, false, false]
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
@@ -84,6 +84,16 @@ ekf_se_map:
   base_link_frame: base_link
   world_frame: map
 
+  #twist1: /odrive_basic_node/twist_estimation
+  #twist1_config: [false, false, false,
+  #                false, false, false,
+  #                true,  true,  true,
+  #                true,  true,  true,
+  #                false, false, false]
+  #twist1_queue_size: 3
+  #twist1_rejection_threshold: 2
+  #twist1_nodelay: false
+
   twist0: /ublox_gps/fix_velocity
   twist0_config: [false, false, false,
                   false, false, false,
@@ -94,12 +104,23 @@ ekf_se_map:
   twist0_rejection_threshold: 2
   twist0_nodelay: false
 
+  odom1: odometry/gps
+  odom1_config: [true,  true,  false,
+                 false, false, false,
+                 false, false, false,
+                 false, false, false,
+                 false, false, false]
+  odom1_queue_size: 10
+  odom1_nodelay: true
+  odom1_differential: false
+  odom1_relative: false
+
   imu0: imu/data
   imu0_config: [false, false, false,
                 true,  true,  false,
                 false, false, false,
                 true,  true,  true,
-                true,  true,  true]
+                false, false, false]
   imu0_nodelay: true
   imu0_differential: false
   imu0_relative: false
@@ -108,8 +129,8 @@ ekf_se_map:
 
   use_control: false
 
-  process_noise_covariance: [1.0,  0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                             0,    1.0,  0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+  process_noise_covariance: [1e-3,  0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                             0,    1e-3,  0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                              0,    0,    1e-3, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                              0,    0,    0,    0.3,  0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                              0,    0,    0,    0,    0.3,  0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
@@ -124,8 +145,8 @@ ekf_se_map:
                              0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.3,  0,
                              0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.3]
 
-  initial_estimate_covariance: [1.0,  0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
-                                0,    1.0,  0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+  initial_estimate_covariance: [1e-3,  0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    1e-3,  0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
                                 0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
                                 0,    0,    0,    1.0,  0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
                                 0,    0,    0,    0,    1.0,  0,    0,    0,    0,    0,     0,     0,     0,    0,    0,

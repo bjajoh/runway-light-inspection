@@ -39,6 +39,13 @@ roslaunch ueye mono.launch
 roslaunch ueye stereo.launch
 ``` 
 
+### Remote control the robot with the keyboard
+```
+sudo apt-get install ros-noetic-teleop-twist-keyboard
+
+rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+```
+
 ![Bilby Stampede](https://upload.wikimedia.org/wikipedia/en/b/b9/AAU_logo_2012.png)
 
 ![Bilby Stampede](https://s3-eu-west-1.amazonaws.com/businessautomation/Proposal_Full_Images/iLocator-GmbH_AAR_5774.jpg)

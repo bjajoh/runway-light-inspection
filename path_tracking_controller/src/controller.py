@@ -3,6 +3,7 @@ import rospy
 PKG = 'path_tracking_controller'
 import roslib; roslib.load_manifest(PKG)
 import rospkg
+import math
 from geometry_msgs.msg  import Twist
 from std_msgs.msg import String, Int8
 from nav_msgs.msg import Odometry
@@ -13,7 +14,16 @@ from geographic_msgs.msg import GeoPoint
 import numpy as np
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
+roll = pitch = yaw = 0.0
+
+def get_rotation(msg):
+    global roll, pitch, yaw
+    orientation_q = msg.pose.pose.orientation
+    orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
+    (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
+    print(yaw)
 
 def purePursuitController(p1, p2, velocity, robot_pos, l):	
 	    epsilon = 0.0001
@@ -55,7 +65,7 @@ class ilocatorbot():
         def __init__(self):
             #Creating our node,publisher and subscriber.
                 rospy.init_node('path_tracking_controller', anonymous=True)
-                self.velocity_publisher = rospy.Publisher('/controller/cmd_vel', Twist, queue_size=10)
+                self.velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
                 self.control_status_publisher = rospy.Publisher('/controller/control_status',String,queue_size=10)
                 self.control_status_publisher_int = rospy.Publisher('/controller/control_status_int',Int8,queue_size=10)
                 self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
@@ -72,7 +82,7 @@ class ilocatorbot():
 
             # Read the path.
                 self.path = []
-                self.pathFileName = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/path.csv')
+                self.pathFileName = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/very_small_rectangle_cantine.csv')
                 self.loadPath()
 
             # Set up the rate.
@@ -107,7 +117,11 @@ class ilocatorbot():
             p1 = 0
             p2 = 1
             while p2 < len(self.path):
-                        robot_pos = [self.robot_pos.pose.pose.position.x, self.robot_pos.pose.pose.position.y, self.robot_pos.pose.pose.orientation.x]
+                        print("test")
+
+                        get_rotation(self.robot_pos)
+
+                        robot_pos = [self.robot_pos.pose.pose.position.x, self.robot_pos.pose.pose.position.y, yaw]
 
                         start_point = self.path[p1]
                         end_point = self.path[p2]
