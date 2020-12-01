@@ -8,7 +8,7 @@ import tf2_ros
 
 import std_msgs.msg
 from std_msgs.msg import Float64, Int32, Int8
-from geometry_msgs.msg import Twist, TwistWithCovariance, TransformStamped
+from geometry_msgs.msg import Twist, TwistWithCovarianceStamped, TransformStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState
 import std_srvs.srv
@@ -40,7 +40,7 @@ class ODriveNode(object):
             self.emergency_obstacle_subscriber = rospy.Subscriber("/emergency_message",Int8, self.emergency_stop_callback, queue_size=2)
             self.status_pub = rospy.Publisher('/odrive_basic_node/status', std_msgs.msg.String, queue_size=2)
             self.status_pub_voltage = rospy.Publisher('/odrive_basic_node/bus_voltage', std_msgs.msg.String, queue_size=2)
-            self.encoder_pub = rospy.Publisher('/odrive_basic_node/twist_estimation',TwistWithCovariance, queue_size=10)
+            self.encoder_pub = rospy.Publisher('/odrive_basic_node/twist_estimation',TwistWithCovarianceStamped, queue_size=10)
             self.status = "disconnected"
             self.interface = ODriveInterfaceAPI()
 
@@ -70,7 +70,7 @@ class ODriveNode(object):
 
 
         def compute_estimated_twist(self, left_angular_vel, right_angular_vel):
-                message = TwistWithCovariance()
+                message = TwistWithCovarianceStamped()
                 left_linear_vel = -1.0*left_angular_vel*self.tyre_circumference*2.0
                 right_linear_vel = right_angular_vel*self.tyre_circumference*2.0
                 angular_vel = (right_linear_vel-left_linear_vel)/self.wheel_track*2.0
@@ -83,6 +83,9 @@ class ODriveNode(object):
                 message.covariance[21] = 0.0001
                 message.covariance[28] = 0.0001
                 message.covariance[35] = 0.0001
+                message.header.stamp = rospy.Time.now()
+                # IN CASE WE NEED THE FRAME ID:
+                # message.header.frame_id = 'vel'
                 return message
                     
 
