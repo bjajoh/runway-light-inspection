@@ -1,29 +1,30 @@
 #!/usr/bin/env python3
+
+import os
+import math
 import rospy
+import rospkg
+import numpy as np
+# from robot_localization.srv import *
 PKG = 'path_tracking_controller'
 import roslib; roslib.load_manifest(PKG)
-import rospkg
-import math
 from geometry_msgs.msg  import Twist
 from std_msgs.msg import String, Int8
 from nav_msgs.msg import Odometry
-import numpy as np
-import os
-from robot_localization.srv import *
 from geographic_msgs.msg import GeoPoint
-import numpy as np
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
-roll = pitch = yaw = 0.0
+
+
 
 def get_rotation(msg):
-    global roll, pitch, yaw
     orientation_q = msg.pose.pose.orientation
     orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
-    (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
+    (roll, pitch, yaw) = euler_from_quaternion(orientation_list)
     print(yaw)
+    return yaw
 
 def purePursuitController(p1, p2, velocity, robot_pos, l):	
 	    epsilon = 0.0001
@@ -74,6 +75,7 @@ class ilocatorbot():
 
             # Set up the velocity and lookahead distance.
                 self.velocity = 0.3
+                self.angular_velocity_limit = 1.0
                 self.lookahead = 0.5
                 self.goal_radius = 1.0
 
@@ -84,6 +86,7 @@ class ilocatorbot():
                 self.path = []
                 self.pathFileName = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/very_small_rectangle_cantine.csv')
                 self.loadPath()
+                print("Path loaded")
 
             # Set up the rate.
                 self.rate = rospy.Rate(10)
@@ -119,7 +122,7 @@ class ilocatorbot():
             while p2 < len(self.path):
                         print("test")
 
-                        get_rotation(self.robot_pos)
+                        yaw = get_rotation(self.robot_pos)
 
                         robot_pos = [self.robot_pos.pose.pose.position.x, self.robot_pos.pose.pose.position.y, yaw]
 
@@ -143,7 +146,7 @@ class ilocatorbot():
                         marker.pose.position.z = 0
 
                         v,omega = purePursuitController(start_point, end_point, self.velocity, robot_pos,self.lookahead)
-                        # v,omega = self.pidController(end_point, self.velocity, robot_pos)
+                        omega = min(self.angular_velocity_limit,abs(omega)) * np.sign(omega)
                         vel_msg = Twist()
 
                 #linear velocity in the x-axis:
