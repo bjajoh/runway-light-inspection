@@ -1,6 +1,6 @@
 <launch>
-	<include file="$(find common)/launch/tf.launch"/>
 	<!-- <include file="$(find ublox_gps)/launch/ublox_zed-f9p.launch"/> -->
 <!--	<include file="$(find mpu9250-driver)/launch/mpu9250.launch"/> -->
 	<include file="$(find robot_localization)/launch/dual_ekf_navsat_example_rob7.launch"/>
+	<include file="$(find common)/launch/tf.launch"/>
 </launch>
