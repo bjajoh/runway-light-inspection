@@ -75,17 +75,17 @@ class ODriveNode(object):
                 right_linear_vel = right_angular_vel*self.tyre_circumference*2.0
                 angular_vel = (right_linear_vel-left_linear_vel)/self.wheel_track*2.0
                 linear_vel = (left_linear_vel+right_linear_vel)/2.0
-                message.twist.linear.x = linear_vel
-                message.twist.angular.z = angular_vel
-                message.covariance[0] = 0.0001
-                message.covariance[7] = 0.0001
-                message.covariance[14] = 0.0001
-                message.covariance[21] = 0.0001
-                message.covariance[28] = 0.0001
-                message.covariance[35] = 0.0001
+                message.twist.twist.linear.x = linear_vel
+                message.twist.twist.angular.z = angular_vel
+                message.twist.covariance[0] = 0.0001
+                message.twist.covariance[7] = 0.0001
+                message.twist.covariance[14] = 0.0001
+                message.twist.covariance[21] = 0.0001
+                message.twist.covariance[28] = 0.0001
+                message.twist.covariance[35] = 0.0001
                 message.header.stamp = rospy.Time.now()
                 # IN CASE WE NEED THE FRAME ID:
-                # message.header.frame_id = 'vel'
+                message.header.frame_id = 'base_link'
                 return message
                     
 

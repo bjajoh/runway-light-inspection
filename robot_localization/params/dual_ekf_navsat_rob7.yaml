@@ -20,22 +20,22 @@ ekf_se_odom:
   #vroll, vpitch, vyaw, 
   #ax, ay, az
 
-  #twist0: /ublox_gps/fix_velocity
-  #twist0_config: [false, false, false,
-  #                false, false, false,
-  #                true,  true,  true,
-  #                false,  false,  false,
-  #                false, false, false]
-  #twist0_queue_size: 3
-  #twist0_rejection_threshold: 2
-  #twist0_nodelay: false
+  twist0: /odrive_basic_node/twist_estimation
+  twist0_config: [false, false, false,
+                  false, false, false,
+                  true,  true,  true,
+                  false,  false,  true,
+                  false, false, false]
+  twist0_queue_size: 3
+  twist0_rejection_threshold: 2
+  twist0_nodelay: false
 
   imu0: imu/data
   imu0_config: [false, false, false,
                 true,  true,  false,
                 false, false, false,
                 true,  true,  true,
-                false, false, false]
+                true, true, true]
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
@@ -101,15 +101,15 @@ ekf_se_map:
   #twist1_rejection_threshold: 2
   #twist1_nodelay: false
 
-  #twist0: /ublox_gps/fix_velocity
-  #twist0_config: [false, false, false,
-  #                false, false, false,
-  #                true,  true,  true,
-  #                false,  false,  false,
-  #                false, false, false]
-  #twist0_queue_size: 3
-  #twist0_rejection_threshold: 2
-  #twist0_nodelay: false
+  twist0: /odrive_basic_node/twist_estimation
+  twist0_config: [false, false, false,
+                  false, false, false,
+                  true,  true,  true,
+                  false,  false,  true,
+                  false, false, false]
+  twist0_queue_size: 3
+  twist0_rejection_threshold: 2
+  twist0_nodelay: false
 
   odom1: odometry/gps
   odom1_config: [true,  true,  false,
@@ -127,7 +127,7 @@ ekf_se_map:
                 true,  true,  false,
                 false, false, false,
                 true,  true,  true,
-                false, false, false]
+                true, true, true]
   imu0_nodelay: true
   imu0_differential: false
   imu0_relative: false
