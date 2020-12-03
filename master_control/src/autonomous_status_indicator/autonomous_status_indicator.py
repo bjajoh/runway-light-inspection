@@ -26,7 +26,7 @@ def assi():
         time.sleep(0.1)
         pixels.fill((0,0,0))
         time.sleep(0.5)
-        rospy.spin()
+        #rospy.spinonce()
 
 if __name__ == '__main__':
     try:

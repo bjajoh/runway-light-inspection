@@ -34,8 +34,8 @@ class ODriveNode(object):
 
             self.wheel_track = 0.4
             self.m_s_to_value = 1.0
-            self.tyre_circumference = 0.2032
-            self.angular_vel_limit = 0.2
+            self.tyre_circumference = 0.638
+            self.angular_vel_limit = 0.5
             self.vel_subscriber = rospy.Subscriber("/cmd_vel",Twist, self.cmd_vel_callback, queue_size=2)
             self.emergency_obstacle_subscriber = rospy.Subscriber("/emergency_message",Int8, self.emergency_stop_callback, queue_size=2)
             self.status_pub = rospy.Publisher('/odrive_basic_node/status', std_msgs.msg.String, queue_size=2)
@@ -71,18 +71,18 @@ class ODriveNode(object):
 
         def compute_estimated_twist(self, left_angular_vel, right_angular_vel):
                 message = TwistWithCovarianceStamped()
-                left_linear_vel = -1.0*left_angular_vel*self.tyre_circumference*2.0
-                right_linear_vel = right_angular_vel*self.tyre_circumference*2.0
+                left_linear_vel = -1.0*left_angular_vel*self.tyre_circumference
+                right_linear_vel = right_angular_vel*self.tyre_circumference
                 angular_vel = (right_linear_vel-left_linear_vel)/self.wheel_track*2.0
                 linear_vel = (left_linear_vel+right_linear_vel)/2.0
                 message.twist.twist.linear.x = linear_vel
                 message.twist.twist.angular.z = angular_vel
-                message.twist.covariance[0] = 0.0001
-                message.twist.covariance[7] = 0.0001
-                message.twist.covariance[14] = 0.0001
-                message.twist.covariance[21] = 0.0001
-                message.twist.covariance[28] = 0.0001
-                message.twist.covariance[35] = 0.0001
+                message.twist.covariance[0] = 0.1
+                message.twist.covariance[7] = 0.1
+                message.twist.covariance[14] = 0.1
+                message.twist.covariance[21] = 0.1
+                message.twist.covariance[28] = 0.1
+                message.twist.covariance[35] = 0.1
                 message.header.stamp = rospy.Time.now()
                 # IN CASE WE NEED THE FRAME ID:
                 message.header.frame_id = 'base_link'
@@ -91,8 +91,8 @@ class ODriveNode(object):
 
         def convert(self, forward, ccw):
                 angular_to_linear = ccw * (self.wheel_track/2.0) 
-                left_angular_vel  = (forward - angular_to_linear/2.0) * self.m_s_to_value/self.tyre_circumference/2.0
-                right_angular_vel = (forward + angular_to_linear/2.0) * self.m_s_to_value/self.tyre_circumference/2.0
+                left_angular_vel  = (forward - angular_to_linear/2.0) * self.m_s_to_value/self.tyre_circumference
+                right_angular_vel = (forward + angular_to_linear/2.0) * self.m_s_to_value/self.tyre_circumference
                 left_angular_vel = np.sign(left_angular_vel) * min(abs(left_angular_vel),self.angular_vel_limit)
                 right_angular_vel = np.sign(right_angular_vel) * min(abs(right_angular_vel),self.angular_vel_limit)
                 return left_angular_vel,right_angular_vel

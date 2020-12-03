@@ -14,6 +14,7 @@ from nav_msgs.msg import Odometry
 from geographic_msgs.msg import GeoPoint
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
+from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 
@@ -62,31 +63,31 @@ def purePursuitController(p1, p2, velocity, robot_pos, l):
 
 class ilocatorbot():
         def __init__(self):
-            #Creating our node,publisher and subscriber.
+                #Creating our node,publisher and subscriber.
                 rospy.init_node('path_tracking_controller', anonymous=True)
-                self.velocity_publisher = rospy.Publisher('/test/cmd_vel', Twist, queue_size=10)
+                self.velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
                 self.control_status_publisher = rospy.Publisher('/controller/control_status',String,queue_size=10)
                 self.control_status_publisher_int = rospy.Publisher('/controller/control_status_int',Int8,queue_size=10)
                 self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
                 self.publisher = rospy.Publisher('/controller/visualization_marker', Marker, queue_size=10)
                 self.robot_pos = Odometry()
 
-            # Set up the velocity and lookahead distance.
-                self.velocity = 0.3
-                self.angular_velocity_limit = 1.0
+                # Set up the velocity and lookahead distance.
+                self.velocity = 0.2
+                self.angular_velocity_limit = 0.5
                 self.lookahead = 0.5
                 self.goal_radius = 1.0
 
-            # Set up the control status dict
+                # Set up the control status dict
                 self.control_status_dict = {'on_path': 1, 'obtained_goal': 2}
 
-            # Read the path.
+                # Read the path.
                 self.path = []
                 self.pathFileName = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/very_small_rectangle_cantine.csv')
                 self.loadPath()
                 print("Path loaded")
 
-            # Set up the rate.
+                # Set up the rate.
                 self.rate = rospy.Rate(10)
 
         def loadPath(self):
@@ -103,11 +104,14 @@ class ilocatorbot():
                                 self.path.append([response.map_point.x,response.map_point.y])
                         self.control_status_publisher.publish('Path loaded')
                         self.path=np.array(self.path)
+                        
+
+
                 except rospy.ServiceException as e:
                         print("Service call failed: %s"%e)
 
 
-    #Callback function implementing the pose value received
+        #Callback function implementing the pose value received
         def callback(self, data):
                 self.robot_pos = data
                 self.robot_pos.pose.pose.position.x = round(self.robot_pos.pose.pose.position.x, 4)
@@ -118,10 +122,7 @@ class ilocatorbot():
             p1 = 0
             p2 = 1
             while p2 < len(self.path):
-                        print("test")
-
                         yaw = get_rotation(self.robot_pos)
-                        print(yaw)
 
                         robot_pos = [self.robot_pos.pose.pose.position.x, self.robot_pos.pose.pose.position.y, yaw]
 
@@ -130,33 +131,57 @@ class ilocatorbot():
 
                         marker = Marker()
                         marker.header.frame_id = "map"
-                        marker.type = marker.SPHERE
+                        marker.type = marker.LINE_STRIP
                         marker.action = marker.ADD
-                        marker.scale.x = 1.1
-                        marker.scale.y = 1.0
-                        marker.scale.z = 1.0
+
+                        # marker scale
+                        marker.scale.x = 0.03
+                        marker.scale.y = 0.03
+                        marker.scale.z = 0.03
+
+                        # marker color
                         marker.color.a = 1.0
                         marker.color.r = 1.0
                         marker.color.g = 1.0
                         marker.color.b = 0.0
+
+                        # marker orientaiton
+                        marker.pose.orientation.x = 0.0
+                        marker.pose.orientation.y = 0.0
+                        marker.pose.orientation.z = 0.0
                         marker.pose.orientation.w = 1.0
-                        marker.pose.position.x = start_point[0]
-                        marker.pose.position.y = start_point[1]
-                        marker.pose.position.z = 0
+
+                        # marker position
+                        marker.pose.position.x = 0.0
+                        marker.pose.position.y = 0.0
+                        marker.pose.position.z = 0.0
+
+                        # marker line points
+                        marker.points = []
+
+                        for i,point in enumerate(self.path):
+                            print(point[0])
+                            print(point[1])
+                            print(i)
+                            line_point = Point()
+                            line_point.x = point[0]
+                            line_point.y = point[1]
+                            line_point.z = 0.0
+                            marker.points.append(line_point)
 
                         v,omega = purePursuitController(start_point, end_point, self.velocity, robot_pos,self.lookahead)
                         omega = min(self.angular_velocity_limit,abs(omega)) * np.sign(omega)
                         vel_msg = Twist()
 
-                #linear velocity in the x-axis:
+                        #linear velocity in the x-axis:
                         vel_msg.linear.x = self.velocity
                         vel_msg.linear.y, vel_msg.linear.z = 0,0
 
-                #angular velocity in the z-axis:
+                        #angular velocity in the z-axis:
                         vel_msg.angular.z = omega
                         vel_msg.angular.x, vel_msg.angular.y = 0,0
 
-                #Publishing our vel_msg
+                        #Publishing our vel_msg
                         self.velocity_publisher.publish(vel_msg)
                         self.control_status_publisher.publish('On path.')
                         self.control_status_publisher_int.publish(self.control_status_dict['on_path'])
@@ -169,15 +194,13 @@ class ilocatorbot():
                                 p1 += 1
                                 p2 += 1
 
-                # When finished, stop the robot.
+            # When finished, stop the robot.
             vel_msg.linear.x = 0
             vel_msg.angular.z = 0
             self.velocity_publisher.publish(vel_msg)
             self.control_status_publisher.publish('Finished at goal point.')
             self.control_status_publisher_int.publish(self.control_status_dict['obtained_goal'])
             rospy.spin()
-
-
 
 
 if __name__ == '__main__':
