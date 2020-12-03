@@ -160,9 +160,9 @@ class ilocatorbot():
                         marker.points = []
 
                         for i,point in enumerate(self.path):
+                            print("waypoint: ", i)
                             print(point[0])
                             print(point[1])
-                            print(i)
                             line_point = Point()
                             line_point.x = point[0]
                             line_point.y = point[1]
