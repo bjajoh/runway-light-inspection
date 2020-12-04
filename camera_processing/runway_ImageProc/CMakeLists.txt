@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  nav_msgs
+  visualization_msgs
   pcl_ros
   pcl_conversions
   cv_bridge
@@ -76,6 +78,8 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    std_msgs
+   nav_msgs
+   visualization_msgs
  )
 
 ################################################
