@@ -12,7 +12,7 @@ rosdep install --from-paths src --ignore-src -r
 ```
 
 
-Generate Correction Data NEMA code https://nmeagen.org/
+Generate Path and correction data NEMA code https://nmeagen.org/
 
 LEDs with Pi: https://learn.adafruit.com/neopixels-on-raspberry-pi/python-usage
 
