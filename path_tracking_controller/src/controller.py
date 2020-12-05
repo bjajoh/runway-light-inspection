@@ -73,8 +73,8 @@ class ilocatorbot():
                 self.robot_pos = Odometry()
 
                 # Set up the velocity and lookahead distance.
-                self.velocity = 0.5
-                self.angular_velocity_limit = 3
+                self.velocity = 2
+                self.angular_velocity_limit = 5
                 self.lookahead = 4.5
                 self.goal_radius = 5.0
 
