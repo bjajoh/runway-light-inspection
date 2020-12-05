@@ -21,6 +21,11 @@ Use catkin build instead of catkin_make: https://catkin-tools.readthedocs.io/en/
 
 ### Running the camera
 ```
+Starting and Stopping the ueye camera usb service:
+sudo systemctl start ueyeusbdrc.service
+sudo systemctl stop ueyeusbdrc.service
+```
+```
 roslaunch common perception.launch
 ```
 ```
@@ -45,6 +50,18 @@ sudo apt-get install ros-noetic-teleop-twist-keyboard
 
 rosrun teleop_twist_keyboard teleop_twist_keyboard.py
 ```
+
+### Record Raw Data
+Mono Camera:
+```
+rosbag record -a -x "/image_raw/theora(.*)|/image_raw/compressedDepth/(.*)|/image_raw/compressed(.*)"
+```
+
+Dual Camera:
+```
+rosbag record -a -x "/left/image_raw/theora(.*)|/left/image_raw/compressedDepth/(.*)|/left/image_raw/compressed(.*)|/right/image_raw/theora(.*)|/right/image_raw/compressedDepth/(.*)|/right/image_raw/compressed(.*)"
+```
+
 
 ![Bilby Stampede](https://upload.wikimedia.org/wikipedia/en/b/b9/AAU_logo_2012.png)
 
