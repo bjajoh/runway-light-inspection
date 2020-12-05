@@ -73,17 +73,17 @@ class ilocatorbot():
                 self.robot_pos = Odometry()
 
                 # Set up the velocity and lookahead distance.
-                self.velocity = 0.2
-                self.angular_velocity_limit = 0.5
-                self.lookahead = 0.5
-                self.goal_radius = 1.0
+                self.velocity = 0.5
+                self.angular_velocity_limit = 3
+                self.lookahead = 4.5
+                self.goal_radius = 5.0
 
                 # Set up the control status dict
                 self.control_status_dict = {'on_path': 1, 'obtained_goal': 2}
 
                 # Read the path.
                 self.path = []
-                self.pathFileName = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/very_small_rectangle_cantine.csv')
+                self.pathFileName = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/noth_aau_airport_like_path_big_radius.csv')
                 self.loadPath()
                 print("Path loaded")
 
@@ -195,11 +195,12 @@ class ilocatorbot():
                                 p2 += 1
 
             # When finished, stop the robot.
-            vel_msg.linear.x = 0
-            vel_msg.angular.z = 0
-            self.velocity_publisher.publish(vel_msg)
-            self.control_status_publisher.publish('Finished at goal point.')
-            self.control_status_publisher_int.publish(self.control_status_dict['obtained_goal'])
+            while True:
+                vel_msg.linear.x = 0
+                vel_msg.angular.z = 0
+                self.velocity_publisher.publish(vel_msg)
+                self.control_status_publisher.publish('Finished at goal point.')
+                self.control_status_publisher_int.publish(self.control_status_dict['obtained_goal'])
             rospy.spin()
 
 

@@ -71,14 +71,14 @@ def assi():
             time.sleep(0.1)
             pixels.fill((0,0,0))
             time.sleep(0.5)
-        elif(state == 2):
-            pixels.fill((255,0,0))
         elif(state == 3):
-            pixels.fill((0,255,0))
+            pixels.fill((0,0,255))
+        elif(state == 4):
+            pixels.fill((0,0,255))
             time.sleep(0.1)
             pixels.fill((0,0,0))
             time.sleep(0.5)
-            pixels.fill((0,255,0))
+            pixels.fill((0,0,255))
             time.sleep(0.1)
             pixels.fill((0,0,0))
             time.sleep(0.5)

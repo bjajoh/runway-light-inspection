@@ -35,7 +35,7 @@ class ODriveNode(object):
             self.wheel_track = 0.4
             self.m_s_to_value = 1.0
             self.tyre_circumference = 0.638
-            self.angular_vel_limit = 0.5
+            self.angular_vel_limit = 10
             self.vel_subscriber = rospy.Subscriber("/cmd_vel",Twist, self.cmd_vel_callback, queue_size=2)
             self.emergency_obstacle_subscriber = rospy.Subscriber("/emergency_message",Int8, self.emergency_stop_callback, queue_size=2)
             self.status_pub = rospy.Publisher('/odrive_basic_node/status', std_msgs.msg.String, queue_size=2)
