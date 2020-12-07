@@ -28,6 +28,7 @@ public:
     void metersCallback(const runway_ImageProc::MetersPointsArrays::ConstPtr& msg);
     void gnssCallback(const nav_msgs::Odometry::ConstPtr& msg);
     visualization_msgs::Marker DeleteMarker();
+    visualization_msgs::Marker ArrowMarker(float x, float y, float orientation);
     visualization_msgs::Marker SphereMarker(float x, float y);
     visualization_msgs::Marker EllipseMarker(float x, float y, float minor, float major, float orientation);
 private:
