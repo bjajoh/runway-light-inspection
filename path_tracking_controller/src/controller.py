@@ -58,7 +58,7 @@ def purePursuitController(p1, p2, velocity, robot_pos, l):
 	    robot_coord_matrix = np.matmul(np.linalg.inv(translation_matrix),pursuit_point_matrix)
 	    curvature = 2*robot_coord_matrix[1]/l**2
 	    omega = velocity*curvature
-	    return velocity, omega
+	    return velocity, omega, pursuit_point
 
 
 class ilocatorbot():
@@ -69,6 +69,7 @@ class ilocatorbot():
                 self.control_status_publisher = rospy.Publisher('/controller/control_status',String,queue_size=10)
                 self.control_status_publisher_int = rospy.Publisher('/controller/control_status_int',Int8,queue_size=10)
                 self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
+                self.emergency_subscriber = rospy.Subscriber('EMERGENCY_TOPIC', Int8, self.safetyCallback)
                 self.publisher = rospy.Publisher('/controller/visualization_marker', Marker, queue_size=10)
                 self.robot_pos = Odometry()
 
@@ -81,17 +82,23 @@ class ilocatorbot():
                 # Set up the control status dict
                 self.control_status_dict = {'on_path': 1, 'obtained_goal': 2}
 
+                # Set up emergency indicator
+                self.is_emergency = 0
+
                 # Read the path.
                 self.path = []
-                self.pathFileName = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/noth_aau_airport_like_path_big_radius.csv')
-                self.loadPath()
-                print("Path loaded")
+                self.safety_path = []
+                self.path_file_name = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/noth_aau_airport_like_path_big_radius.csv')
+                self.safety_path_file_name = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/safety_path.csv')
+                self.loadPaths()
+                print("Paths loaded")
 
                 # Set up the rate.
                 self.rate = rospy.Rate(10)
 
-        def loadPath(self):
-                lat_long_points = np.genfromtxt(self.pathFileName, delimiter = ',')
+        def loadPaths(self):
+                lat_long_points = np.genfromtxt(self.path_file_name, delimiter = ',')
+                lat_long_safety_points = np.genfromtxt(self.safety_path_file_name, delimiter = ',')
                 rospy.wait_for_service('fromLL')
                 transformation_method = rospy.ServiceProxy('fromLL', FromLL)
                 try:
@@ -100,15 +107,26 @@ class ilocatorbot():
                                 lat_long.latitude = gps_point[0]
                                 lat_long.longitude = gps_point[1]
                                 lat_long.altitude = 0.0
-                                response = transformation_method(lat_long) # maybe we need to pass a special message
+                                response = transformation_method(lat_long)
                                 self.path.append([response.map_point.x,response.map_point.y])
-                        self.control_status_publisher.publish('Path loaded')
+                        self.control_status_publisher.publish('Path loaded.')
                         self.path=np.array(self.path)
+                        
+                        for gps_point in lat_long_safety_points:
+                                lat_long = GeoPoint()
+                                lat_long.latitude = gps_point[0]
+                                lat_long.longitude = gps_point[1]
+                                lat_long.altitude = 0.0
+                                response = transformation_method(lat_long)
+                                self.safety_path.append([response.map_point.x,response.map_point.y])
+                        self.control_status_publisher.publish('Safety path loaded.')
+                        self.safety_path=np.array(self.path)
                         
 
 
                 except rospy.ServiceException as e:
                         print("Service call failed: %s"%e)
+
 
 
         #Callback function implementing the pose value received
@@ -117,61 +135,40 @@ class ilocatorbot():
                 self.robot_pos.pose.pose.position.x = round(self.robot_pos.pose.pose.position.x, 4)
                 self.robot_pos.pose.pose.position.y = round(self.robot_pos.pose.pose.position.y, 4)
 
+        def safetyCallback(self,data):
+            if data == 0:
+                self.is_emergency = False
+            if data == 1:
+                self.is_emergency = True
+
 
         def run(self):
+            self.createPathMarker()
+
             p1 = 0
             p2 = 1
+            vel_msg = Twist()
             while p2 < len(self.path):
                         yaw = get_rotation(self.robot_pos)
 
                         robot_pos = [self.robot_pos.pose.pose.position.x, self.robot_pos.pose.pose.position.y, yaw]
 
-                        start_point = self.path[p1]
+                        start_point = self.path[p1]                                
                         end_point = self.path[p2]
 
-                        marker = Marker()
-                        marker.header.frame_id = "map"
-                        marker.type = marker.LINE_STRIP
-                        marker.action = marker.ADD
+                        # if emergency, the goal is the closest emergency point.
+                        if self.is_emergency:
+                            print("Going to emergenct goal point.")
+                            start_point = robot_pos[:2]
+                            end_point = self.findClosestPoint(robot_pos[:2], self.safety_path)
+                            p2 = len(self.path)
 
-                        # marker scale
-                        marker.scale.x = 0.03
-                        marker.scale.y = 0.03
-                        marker.scale.z = 0.03
-
-                        # marker color
-                        marker.color.a = 1.0
-                        marker.color.r = 1.0
-                        marker.color.g = 1.0
-                        marker.color.b = 0.0
-
-                        # marker orientaiton
-                        marker.pose.orientation.x = 0.0
-                        marker.pose.orientation.y = 0.0
-                        marker.pose.orientation.z = 0.0
-                        marker.pose.orientation.w = 1.0
-
-                        # marker position
-                        marker.pose.position.x = 0.0
-                        marker.pose.position.y = 0.0
-                        marker.pose.position.z = 0.0
-
-                        # marker line points
-                        marker.points = []
-
-                        for i,point in enumerate(self.path):
-                            print("waypoint: ", i)
-                            print(point[0])
-                            print(point[1])
-                            line_point = Point()
-                            line_point.x = point[0]
-                            line_point.y = point[1]
-                            line_point.z = 0.0
-                            marker.points.append(line_point)
-
-                        v,omega = purePursuitController(start_point, end_point, self.velocity, robot_pos,self.lookahead)
+                        v, omega, pursuit_point = purePursuitController(start_point, end_point, self.velocity, robot_pos,self.lookahead)
                         omega = min(self.angular_velocity_limit,abs(omega)) * np.sign(omega)
-                        vel_msg = Twist()
+                        
+
+                        print("pursuit point: {}", pursuit_point)
+                        self.createPursuitMarker(pursuit_point)
 
                         #linear velocity in the x-axis:
                         vel_msg.linear.x = self.velocity
@@ -185,7 +182,6 @@ class ilocatorbot():
                         self.velocity_publisher.publish(vel_msg)
                         self.control_status_publisher.publish('On path.')
                         self.control_status_publisher_int.publish(self.control_status_dict['on_path'])
-                        self.publisher.publish(marker)
                         self.rate.sleep()
 
                         # If at the goal point, change the points fed to the controller.
@@ -195,13 +191,91 @@ class ilocatorbot():
                                 p2 += 1
 
             # When finished, stop the robot.
-            while True:
-                vel_msg.linear.x = 0
-                vel_msg.angular.z = 0
-                self.velocity_publisher.publish(vel_msg)
-                self.control_status_publisher.publish('Finished at goal point.')
-                self.control_status_publisher_int.publish(self.control_status_dict['obtained_goal'])
+            vel_msg.linear.x = 0
+            vel_msg.angular.z = 0
+            self.velocity_publisher.publish(vel_msg)
+            self.control_status_publisher.publish('Finished at goal point.')
+            self.control_status_publisher_int.publish(self.control_status_dict['obtained_goal'])
             rospy.spin()
+
+
+        def findClosestPoint(self, pos, points):
+            min_dist = np.Inf
+            pos = np.array(pos)
+            points = np.array(points)
+            closest_point = points[0]
+            for point in points:
+                dist = np.linalg.norm(pos - point)
+                if dist < min_dist:
+                    min_dist = dist
+                    closest_point = point
+            return closest_point
+
+        def createPursuitMarker(self, point):
+            marker = Marker()
+            marker.id = i
+            marker.header.frame_id = "map"
+            marker.type = 2
+            marker.action = 0
+            marker.scale.x = 1.1
+            marker.scale.y = 1.0
+            marker.scale.z = 1.0
+            marker.color.a = 1.0
+            marker.color.r = 1.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+            marker.pose.orientation.w = 1.0
+            marker.pose.position.x = point[0]
+            marker.pose.position.y = point[1]
+            marker.pose.position.z = 0
+            # marker.lifetime=500.0
+            self.publisher.publish(marker)
+                                    
+                        
+
+        def createPathMarker(self):
+            marker = Marker()
+            marker.header.frame_id = "map"
+            marker.type = marker.LINE_STRIP
+            marker.action = marker.ADD
+
+            # marker scale
+            marker.scale.x = 0.03
+            marker.scale.y = 0.03
+            marker.scale.z = 0.03
+
+            # marker color
+            marker.color.a = 1.0
+            marker.color.r = 1.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+
+            # marker orientaiton
+            marker.pose.orientation.x = 0.0
+            marker.pose.orientation.y = 0.0
+            marker.pose.orientation.z = 0.0
+            marker.pose.orientation.w = 1.0
+
+            # marker position
+            marker.pose.position.x = 0.0
+            marker.pose.position.y = 0.0
+            marker.pose.position.z = 0.0
+
+            # marker line points
+            marker.points = []
+
+            for i,point in enumerate(self.path):
+                print("waypoint: ", i)
+                print(point[0])
+                print(point[1])
+                line_point = Point()
+                line_point.x = point[0]
+                line_point.y = point[1]
+                line_point.z = 0.0
+                marker.points.append(line_point)
+            self.publisher.publish(marker)
+
+
 
 
 if __name__ == '__main__':
