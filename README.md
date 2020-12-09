@@ -62,6 +62,10 @@ Dual Camera:
 rosbag record -a -x "/left/image_raw/theora(.*)|/left/image_raw/compressedDepth/(.*)|/left/image_raw/compressed(.*)|/right/image_raw/theora(.*)|/right/image_raw/compressedDepth/(.*)|/right/image_raw/compressed(.*)"
 ```
 
+### Replay log data and removing recompute topics
+```
+rosbag play TEST.bag -l /odometry/filtered:=/trash /odometry/filtered_map:=/trash2 /odometry/gps:=/trash3 /tf:=/trash4 /tf_static:=/trash5 /initialpose:=/trash6 /gps/filtered:=/trash7 /rosout:=/trash8 /rosout_agg:=/trash9 /diagnostics:=/trash10 /imu/data:=/imu/data_old /ublox_gps/fix:=/ublox_gps/fix_old /odrive_basic_node/twist_estimation:=/odrive_basic_node/twist_estimation_old -s 0 -l
+```
 
 ![Bilby Stampede](https://upload.wikimedia.org/wikipedia/en/b/b9/AAU_logo_2012.png)
 
