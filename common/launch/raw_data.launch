@@ -1,5 +1,7 @@
 <launch>
+	<!-- <include file="$(find mpu9250-driver)/launch/mpu9250.launch"/> -->
 	<include file="$(find common)/launch/tf.launch"/>
-	<include file="$(find mpu9250-driver)/launch/mpu9250.launch"/>
-	<include file="$(find ublox_gps)/launch/ublox_zed-f9p.launch"/>
+	<include file="$(find common)/launch/rtk.launch"/>
+	<include file="$(find sbg_driver)/launch/examples/sbg_ellipseN.launch"/>
+	<node pkg="odrive_ros" type="odrive_basic_node.py" name="odrive_ros" output="screen"> </node>
 </launch>

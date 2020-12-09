@@ -70,7 +70,8 @@ class ilocatorbot():
                 self.control_status_publisher_int = rospy.Publisher('/controller/control_status_int',Int8,queue_size=10)
                 self.pose_subscriber = rospy.Subscriber('/odometry/filtered_map', Odometry, self.callback)
                 self.emergency_subscriber = rospy.Subscriber('EMERGENCY_TOPIC', Int8, self.safetyCallback)
-                self.publisher = rospy.Publisher('/controller/visualization_marker', Marker, queue_size=10)
+                self.path_visu_publisher = rospy.Publisher('/controller/path_visu', Marker, queue_size=10)
+                self.lookahead_visu_publisher = rospy.Publisher('/controller/lookahead', Marker, queue_size=10)
                 self.robot_pos = Odometry()
 
                 # Set up the velocity and lookahead distance.
@@ -88,7 +89,7 @@ class ilocatorbot():
                 # Read the path.
                 self.path = []
                 self.safety_path = []
-                self.path_file_name = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/noth_aau_airport_like_path_big_radius.csv')
+                self.path_file_name = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/airport_test_small.csv')
                 self.safety_path_file_name = os.path.join(rospkg.RosPack().get_path('path_tracking_controller'),'data/safety_path.csv')
                 self.loadPaths()
                 print("Paths loaded")
@@ -213,23 +214,23 @@ class ilocatorbot():
 
         def createPursuitMarker(self, point):
             marker = Marker()
-            marker.id = i
+            marker.id = 0
             marker.header.frame_id = "map"
             marker.type = 2
             marker.action = 0
-            marker.scale.x = 1.1
-            marker.scale.y = 1.0
-            marker.scale.z = 1.0
+            marker.scale.x = 10.0
+            marker.scale.y = 10.0
+            marker.scale.z = 10.0
             marker.color.a = 1.0
             marker.color.r = 1.0
-            marker.color.g = 1.0
+            marker.color.g = 0.0
             marker.color.b = 0.0
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = point[0]
             marker.pose.position.y = point[1]
             marker.pose.position.z = 0
             # marker.lifetime=500.0
-            self.publisher.publish(marker)
+            self.lookahead_visu_publisher.publish(marker)
                                     
                         
 
@@ -240,9 +241,9 @@ class ilocatorbot():
             marker.action = marker.ADD
 
             # marker scale
-            marker.scale.x = 0.03
-            marker.scale.y = 0.03
-            marker.scale.z = 0.03
+            marker.scale.x = 0.3
+            marker.scale.y = 0.3
+            marker.scale.z = 0.3
 
             # marker color
             marker.color.a = 1.0
@@ -273,7 +274,7 @@ class ilocatorbot():
                 line_point.y = point[1]
                 line_point.z = 0.0
                 marker.points.append(line_point)
-            self.publisher.publish(marker)
+            self.path_visu_publisher.publish(marker)
 
 
 

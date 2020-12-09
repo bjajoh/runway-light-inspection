@@ -73,7 +73,7 @@ class ODriveNode(object):
                 message = TwistWithCovarianceStamped()
                 left_linear_vel = -1.0*left_angular_vel*self.tyre_circumference
                 right_linear_vel = right_angular_vel*self.tyre_circumference
-                angular_vel = (right_linear_vel-left_linear_vel)/self.wheel_track*2.0
+                angular_vel = (right_linear_vel-left_linear_vel)/self.wheel_track
                 linear_vel = (left_linear_vel+right_linear_vel)/2.0
                 message.twist.twist.linear.x = linear_vel
                 message.twist.twist.angular.z = angular_vel

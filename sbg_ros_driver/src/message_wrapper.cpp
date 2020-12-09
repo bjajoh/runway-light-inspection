@@ -29,7 +29,7 @@ const std_msgs::Header MessageWrapper::createRosHeader(uint32_t device_timestamp
 
   if (!m_first_valid_utc_)
   {
-    header.stamp    = m_ros_processing_time_;
+    header.stamp    = ros::Time::now(); //m_ros_processing_time_;
     header.frame_id = "System";
     header.frame_id = "imu_frame";
 
@@ -648,6 +648,9 @@ const sensor_msgs::Imu MessageWrapper::createRosImuMessage(const sbg_driver::Sbg
   sensor_msgs::Imu imu_ros_message;
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
+
+  imu_ros_message.header.stamp = ros::Time::now();
+
   // NED
   //imu_ros_message.orientation.w                       = ref_sbg_quat_msg.quaternion.w;
   //imu_ros_message.orientation.x                       = ref_sbg_quat_msg.quaternion.x;
