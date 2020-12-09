@@ -64,7 +64,7 @@ rosbag record -a -x "/left/image_raw/theora(.*)|/left/image_raw/compressedDepth/
 
 ### Replay log data and removing recompute topics
 ```
-rosbag play test.bag -l /odometry/filtered:=/trash /odometry/filtered_map:=/trash2 /odometry/gps:=/trash3 /tf:=/trash4 /tf_static:=/trash5 /initialpose:=/trash6 /gps/filtered:=/tras7
+rosbag play test.bag -l /odometry/filtered:=/trash /odometry/filtered_map:=/trash2 /odometry/gps:=/trash3 /tf:=/trash4 /tf_static:=/trash5 /initialpose:=/trash6 /gps/filtered:=/trash7 /rosout:=/trash8 /rosout_agg:=/trash9 /diagnostics:=/trash10
 ```
 
 ![Bilby Stampede](https://upload.wikimedia.org/wikipedia/en/b/b9/AAU_logo_2012.png)
