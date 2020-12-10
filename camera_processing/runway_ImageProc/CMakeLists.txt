@@ -18,6 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   cv_bridge
   message_generation
+  tf2
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions

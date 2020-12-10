@@ -1,4 +1,4 @@
-#include "PositionEstimator.h"
+#include "PositionEstimator2.h"
 
 float map(float x, float in_min, float in_max, float out_min, float out_max)
 {
@@ -9,18 +9,19 @@ void initializeTransformMatrix()
 {
     cv::Matx33f homography;
     pts_dest = {
-            {-1.2975, 5.505}, //Top Left
-            {1.2975, 5.505},  //Top Right
-            {1.2975, 2.91}, //Bottom Right
-            {-1.2975,2.91}, //Bottom Left
+            {-129.75, 550.5}, //Top Left
+            {129.75, 550.5},  //Top Right
+            {129.75, 291}, //Bottom Right
+            {-129.75,291}, //Bottom Left
     };
     pts_src = {
-            {613, 953}, //Top Left
-            {1442,951}, //Top Right
-            {1814, 1015}, //Bottom Right
-            {237,1016},  //Bottom Left
+            {335, 540}, //Top Left
+            {950,543}, //Top Right
+            {1221, 589}, //Bottom Right
+            {61,582},  //Bottom Left
     };
     cv::Mat test = cv::getPerspectiveTransform(pts_src, pts_dest);
+    std::cout<<"Init2: "<<std::endl<<test<<std::endl;
     test.copyTo(transformM);
 }
 
@@ -52,42 +53,53 @@ std::vector <cv::Point2f> getRelativePositions(cv::Mat image)
     cv::findContours(undistorted_image, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
     //Calculate moments and light center pixels
     std::vector <cv::Moments> mu(contours.size());
-    std::vector <cv::Point2f> lightCenter;
+    std::vector <cv::Point2f> lightCenter, lightCenter_transformed;
     for (size_t i = 0; i < contours.size(); i++)
     {
         mu[i] = moments(contours[i]);
         float lightCenter_y = static_cast<float>(mu[i].m01 / (mu[i].m00 + 1e-5));
-            float lightCenter_x = static_cast<float>(mu[i].m10 / (mu[i].m00 + 1e-5));
-            lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y + crop_top));
+        float lightCenter_x = static_cast<float>(mu[i].m10 / (mu[i].m00 + 1e-5));
+        lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y + crop_top));
+        if (lightCenter_y - uncertaintyPixels < 0)
+            lightCenter.push_back(cv::Point2f(lightCenter_x, 0 + crop_top));
+        else
             lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y - uncertaintyPixels + crop_top));
+        if (lightCenter_x + uncertaintyPixels > undistorted_image.cols - 1)
+            lightCenter.push_back(cv::Point2f(undistorted_image.cols - 1, lightCenter_y + crop_top));
+        else
             lightCenter.push_back(cv::Point2f(lightCenter_x + uncertaintyPixels, lightCenter_y + crop_top));
+        if (lightCenter_y + uncertaintyPixels > undistorted_image.rows - 1)
+            lightCenter.push_back(cv::Point2f(lightCenter_x, undistorted_image.rows - 1 + crop_top));
+        else
             lightCenter.push_back(cv::Point2f(lightCenter_x, lightCenter_y + uncertaintyPixels+ crop_top));
+        if (lightCenter_x - uncertaintyPixels < 0)
+            lightCenter.push_back(cv::Point2f(0, lightCenter_y + crop_top));
+        else
             lightCenter.push_back(cv::Point2f(lightCenter_x - uncertaintyPixels, lightCenter_y + crop_top));
     }
     std::vector <cv::Point2f> lightPositions;
     if (!lightCenter.empty())
     {
         cv::perspectiveTransform(lightCenter, lightPositions, transformM);
-        for(int i = 0; i < lightPositions.size(); i+=5)
-            std::cout << "Light " << i/5 << ": " << lightPositions[i].x << " " << lightPositions[i].y << std::endl;
+        for(int i = 0; i < lightPositions.size(); i++)
+            std::cout << "Light " << i << ": " << lightPositions[i].x << " " << lightPositions[i].y << std::endl;
     }
     //Show image
     if (show_images)
     {
-        cv::Mat drawing = cv::Mat::zeros(image.size(), CV_8UC3);
+        cv::Mat drawing = cv::Mat::zeros(undistorted_image.size(), CV_8UC3);
+        cv::warpPerspective(undistorted_image, drawing, transformM, cv::Size(undistorted_image.rows,undistorted_image.cols));
+        cv::cvtColor(drawing, drawing, cv::COLOR_GRAY2BGR);
         //Draw ligth centers
         for (size_t i = 0; i < lightCenter.size() / 5; i++)
         {
             cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-            cv::circle(drawing, lightCenter[i * 5], 4, color, -1);
-            cv::circle(drawing, lightCenter[i * 5 + 1], 2, color, -1);
-            cv::circle(drawing, lightCenter[i * 5 + 2], 2, color, -1);
-            cv::circle(drawing, lightCenter[i * 5 + 3], 2, color, -1);
-            cv::circle(drawing, lightCenter[i * 5 + 4], 2, color, -1);
+            cv::circle(drawing, lightCenter_transformed[i * 5], 4, color, -1);
+            cv::circle(drawing, lightCenter_transformed[i * 5 + 1], 2, color, -1);
+            cv::circle(drawing, lightCenter_transformed[i * 5 + 2], 2, color, -1);
+            cv::circle(drawing, lightCenter_transformed[i * 5 + 3], 2, color, -1);
+            cv::circle(drawing, lightCenter_transformed[i * 5 + 4], 2, color, -1);
         }
-        cv::resize(drawing, drawing, cv::Size(), 0.5, 0.5);
-        cv::resize(undistorted_image, undistorted_image, cv::Size(), 0.5, 0.5);
-        cv::resize(image, image, cv::Size(), 0.5, 0.5);
         cv::imshow("Final image drawing", drawing);
         cv::imshow("Final image", undistorted_image);
         cv::imshow("Initial image", image);
@@ -107,7 +119,7 @@ void SubscribeAndPublish::imageCallback(const sensor_msgs::ImageConstPtr &msg)
         std::vector <cv::Point2f> lightPositions = getRelativePositions(image);
         runway_ImageProc::MetersPointsArrays msg_pub;
         runway_ImageProc::MetersCoordinates coords;
-        msg_pub.header.frame_id = "base_link/camera_front";
+        msg_pub.header.frame_id = "front_cam";
         msg_pub.header.stamp = ros::Time::now();
         msg_pub.lights_nr = lightPositions.size() / 5;
         for (int i = 0; i < lightPositions.size() / 5; i++)
@@ -140,17 +152,17 @@ SubscribeAndPublish::SubscribeAndPublish()
 {
     //Param reading
     /*
-    nh.getParam("front_showImages",show_images);
-    nh.getParam("front_uncertaintyPixels",uncertaintyPixels);
-    nh.getParam("front_thresholdValue",thresholdValue);
-    nh.getParam("front_cropTop",crop_top);
-    nh.getParam("front_cropBottom",crop_bottom);
+    nh.getParam("back_showImages",show_images);
+    nh.getParam("back_uncertaintyPixels",uncertaintyPixels);
+    nh.getParam("back_thresholdValue",thresholdValue);
+    nh.getParam("back_cropTop",crop_top);
+    nh.getParam("back_cropBottom",crop_bottom);
      */
     show_images = true;
-    uncertaintyPixels = 5;
-    thresholdValue = 210;
-    crop_top = 924;
-    crop_bottom = 1432;
+    uncertaintyPixels = 10;
+    thresholdValue = 100;
+    crop_top = 200;
+    crop_bottom = 1000;
     //Initialize matrices
     initializeTransformMatrix();
     initializeUndistortMatrixes();
@@ -159,12 +171,12 @@ SubscribeAndPublish::SubscribeAndPublish()
     pub = nh.advertise<runway_ImageProc::MetersPointsArrays>("/image_processing/relative_meters", 1);
 
     //Image subscribing topic
-    sub = nh.subscribe("/left/image_raw", 1, &SubscribeAndPublish::imageCallback, this);
+    sub = nh.subscribe("/camera/image_raw", 1, &SubscribeAndPublish::imageCallback, this);
 }
 
 int main(int argc, char **argv)
 {
-    std::cout<<"Node initialization initiated\n";
+    std::cout<<"Node initialization initiated B-)\n";
     ros::init(argc, argv, "Image_Processing_Front");
     SubscribeAndPublish SAPObject;
     ros::spin();

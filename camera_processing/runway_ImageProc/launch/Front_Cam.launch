@@ -1,0 +1,11 @@
+<launch>
+  <node name="PositionEstimator_Front" pkg="runway_ImageProc" type="PositionEstimator" />
+  <node name="GPS_PositionEstimator" pkg="runway_ImageProc" type="GPS_PositionEstimator" />
+
+  <param name="front_showImages" type="bool" value="true" />
+  <param name="front_uncertaintyPixels" type="int" value="10" />
+  <param name="front_uncertaintyPixels" type="int" value="10" />
+  <param name="front_thresholdValue" type="int" value="180" />
+  <param name="front_cropTop" type="int" value="200" />
+  <param name="front_cropBottom" type="int" value="1500" />
+</launch>

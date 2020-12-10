@@ -30,7 +30,7 @@ visualization_msgs::Marker SubscribeAndPublish::DeleteMarker()
     if (marker_counter > 0)
     {
         deleteMarker.header.stamp = ros::Time();
-        deleteMarker.header.frame_id = "map";
+        deleteMarker.header.frame_id = "/map";
         deleteMarker.ns = "gps_estimation";
         deleteMarker.id = marker_counter;
         deleteMarker.type = visualization_msgs::Marker::CYLINDER;
@@ -45,7 +45,7 @@ visualization_msgs::Marker SubscribeAndPublish::SphereMarker(float x, float y)
 {
     visualization_msgs::Marker sphereMarker;
     sphereMarker.header.stamp = ros::Time();
-    sphereMarker.header.frame_id = "map";
+    sphereMarker.header.frame_id = "/map";
     sphereMarker.ns = "gps_estimation";
     sphereMarker.id = marker_counter;
     sphereMarker.type = visualization_msgs::Marker::SPHERE;
@@ -72,7 +72,7 @@ visualization_msgs::Marker SubscribeAndPublish::EllipseMarker(float x, float y, 
 {
     visualization_msgs::Marker ellipseMarker;
     ellipseMarker.header.stamp = ros::Time();
-    ellipseMarker.header.frame_id = "map";
+    ellipseMarker.header.frame_id = "/map";
     ellipseMarker.ns = "gps_estimation";
     ellipseMarker.id = marker_counter;
     ellipseMarker.type = visualization_msgs::Marker::CYLINDER;
@@ -98,8 +98,6 @@ visualization_msgs::Marker SubscribeAndPublish::EllipseMarker(float x, float y, 
 
 void SubscribeAndPublish::metersCallback(const runway_ImageProc::MetersPointsArrays::ConstPtr &msg)
 {
-    if (gnss_init)
-    {
         std::cout << "Meters callback called\n";
         //First we delete all existing markers
         visualization_msgs::MarkerArray vis_msg;
@@ -113,48 +111,39 @@ void SubscribeAndPublish::metersCallback(const runway_ImageProc::MetersPointsArr
         runway_ImageProc::LightCoordinates msg_pub;
         for (int i = 0; i < msg->lights_nr; i++)
         {
-            mtx.lock();
             msg_pub.uncertainty_major = std::sqrt(std::pow(msg->uncertainty_up[i].x - msg->uncertainty_down[i].x, 2) +
                                                   std::pow(msg->uncertainty_up[i].y - msg->uncertainty_down[i].y, 2));
             msg_pub.uncertainty_minor = std::sqrt(
                     std::pow(msg->uncertainty_left[i].x - msg->uncertainty_right[i].x, 2) +
                     std::pow(msg->uncertainty_left[i].y - msg->uncertainty_right[i].y, 2) );
-            float orientation = std::atan2(msg->light[i].y,
-                                           msg->light[i].x);
-            if(orientation > PI/2)
-                orientation = gnss_rot + orientation - PI/2;
-            else
-                orientation = gnss_rot - (PI/2 - orientation);
-            if (orientation > 2 * PI)
-                orientation -= 2 * PI;
-            std::pair<float, float> point_coordinates = globalFrame_transform(msg->light[i].x, msg->light[i].y,
-                                                                              orientation);
-            float orientation_uncer = std::atan2(msg->uncertainty_up[i].y - msg->uncertainty_down[i].y,
-                                                 msg->uncertainty_up[i].x - msg->uncertainty_down[i].x);
-            if(orientation_uncer > PI/2)
-                orientation_uncer = gnss_rot + orientation_uncer - PI/2;
-            else
-                orientation_uncer = gnss_rot - (PI/2 - orientation_uncer);
-            if (orientation_uncer > 2 * PI)
-                orientation_uncer -= 2 * PI;
-            msg_pub.point_x = point_coordinates.first;
-            msg_pub.point_y = point_coordinates.second;
-            msg_pub.uncertainty_orientation = orientation_uncer;
-            mtx.unlock();
-            //Outputting values of msg to terminal
-            std::cout << "Light " << i << " x: " << msg_pub.point_x << " y: " << msg_pub.point_y << " minor: "
-                      << msg_pub.uncertainty_minor << " major: " << msg_pub.uncertainty_major << " orientation: "
-                      << msg_pub.uncertainty_orientation * 180 / PI << std::endl;
+            geometry_msgs::PoseStamped camera_pose;
+            //First up, we transform the light point
+            camera_pose.header = msg->header;
+            camera_pose.pose.position.x = msg->light[i].x;
+            camera_pose.pose.position.y = msg->light[i].y;
+            while(!tf_buffer.canTransform("base_link/camera_front", msg->header.stamp, "map", ros::Time::now(), "base_link", ros::Duration(1.0)));
+            geometry_msgs::PoseStamped map_pose = tf_buffer.transform(camera_pose, "map");
+            msg_pub.point_x = map_pose.pose.position.x;
+            msg_pub.point_y = map_pose.pose.position.y;
+            //Now we get the 2 major uncertainty points in order to calculate the ellipse's orientation
+            camera_pose.pose.position.x = msg->uncertainty_up[i].x;
+            camera_pose.pose.position.y = msg->uncertainty_up[i].y;
+            while(!tf_buffer.canTransform("base_link/camera_front", msg->header.stamp, "map", ros::Time::now(), "base_link", ros::Duration(1.0)));
+            map_pose = tf_buffer.transform(camera_pose, "map");
+            camera_pose.pose.position.x = msg->uncertainty_down[i].x;
+            camera_pose.pose.position.y = msg->uncertainty_down[i].y;
+            while(!tf_buffer.canTransform("base_link/camera_front", msg->header.stamp, "map", ros::Time::now(), "base_link", ros::Duration(1.0)));
+            geometry_msgs::PoseStamped map_pose2 = tf_buffer.transform(camera_pose, "map");
+            msg_pub.uncertainty_orientation = std::atan2(map_pose.pose.position.x - map_pose2.pose.position.x,map_pose.pose.position.y - map_pose2.pose.position.y);
             pub.publish(msg_pub);
             //Create markers and add to array
-            vis_msg.markers.push_back(SphereMarker(point_coordinates.first, point_coordinates.second));
+            vis_msg.markers.push_back(SphereMarker(msg_pub.point_x, msg_pub.point_y));
             vis_msg.markers.push_back(
-                    EllipseMarker(point_coordinates.first, point_coordinates.second, msg_pub.uncertainty_minor,
-                                  msg_pub.uncertainty_major, orientation_uncer));
+                    EllipseMarker(msg_pub.point_x, msg_pub.point_y, msg_pub.uncertainty_minor,
+                                  msg_pub.uncertainty_major, msg_pub.uncertainty_orientation));
         }
         //Publish markers array
         vis_pub.publish(vis_msg);
-    }
 }
 
 void SubscribeAndPublish::gnssCallback(const nav_msgs::Odometry::ConstPtr &msg)
@@ -177,26 +166,8 @@ void SubscribeAndPublish::gnssCallback(const nav_msgs::Odometry::ConstPtr &msg)
         gnss_rot = yaw;
     if(gnss_rot > 2*PI)
         gnss_rot -= 2*PI;
-    //Vizualization
-    /*
-    visualization_msgs::MarkerArray vis_msg;
-    if(!gnss_init)
-    {
-        visualization_msgs::Marker deleteMarker;
-        deleteMarker.header.stamp = ros::Time();
-        deleteMarker.header.frame_id = "/my_frame";
-        deleteMarker.ns = "gps_estimation";
-        deleteMarker.id = 200;
-        deleteMarker.type = visualization_msgs::Marker::CYLINDER;
-        deleteMarker.action = visualization_msgs::Marker::DELETE;
-        deleteMarker.color.a = 0.0;
-        vis_msg.markers.push_back(deleteMarker);
-    }
-    vis_msg.markers.push_back(ArrowMarker(gnss_x,gnss_y,gnss_rot));
-    vis_pub.publish(vis_msg);
-     */
     //std::cout << "GNSS coordinates updated. X: " << gnss_x << " Y: " << gnss_y << " Rot: " << gnss_rot *180 / PI
-    //         << std::endl;
+     //         << std::endl;
     mtx.unlock();
     gnss_init = true;
 }
