@@ -1,6 +1,6 @@
 [submodule "ros-mpu9250-ahrs"]
 	path = ros-mpu9250-ahrs
-	url = https://github.com/bjajoh/ros-mpu9250-ahrs
+	url = https://github.com/bjajoh/ros-mpu9250-ahrs.git
 [submodule "nmea_msgs"]
 	path = nmea_msgs
 	url = https://github.com/ros-drivers/nmea_msgs.git
@@ -10,3 +10,15 @@
 [submodule "uiid"]
 	path = uiid
 	url = https://github.com/ros-geographic-info/unique_identifier
+[submodule "ntrip_ros_python3"]
+	path = ntrip_ros_python3
+	url = https://github.com/bjajoh/ntrip_ros_python3.git
+[submodule "nimbus-ros"]
+	path = nimbus-ros
+	url = https://github.com/pieye/nimbus-ros
+[submodule "nimbus-perception"]
+	path = nimbus-perception
+	url = https://github.com/pieye/nimbus-perception
+[submodule "sbg_ros_driver"]
+	path = sbg_ros_driver
+	url = https://github.com/bjajoh/sbg_ros_driver.git
