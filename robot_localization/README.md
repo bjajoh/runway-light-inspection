@@ -1,9 +1,11 @@
 robot_localization
 ==================
 
-robot_localization is a package of nonlinear state estimation nodes. The package was developed by Charles River Analytics, Inc.
+robot_localization is a package of nonlinear state estimation nodes.
 
-Please see documentation here: http://docs.ros.org/melodic/api/robot_localization/html/index.html
+The following example shows the ROS service call of the navsat_transform node. It can be used to transform WGS84 coordinates from and to local refference coordinates.
+
+This example call "/fromLL" tansforms a point on AAU (Aalborg) campus east to the local coordinate system (meters).
 
 ``` 
 rosservice call /fromLL "ll_point:
@@ -16,7 +18,7 @@ map_point:
   z: 0.0
 ``` 
 
-
+The following call does the oposite.
 
 ``` 
 rosservice call /toLL "map_point:
