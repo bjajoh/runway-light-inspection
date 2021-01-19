@@ -5,9 +5,9 @@ import csv
 #Connection Variables
 databaseURL = "https://www.ilocator.com/api/v2/users/token"
 syncURL = url = "https://www.ilocator.com/api/v2/objects/sync/1"
-databaseAuthUser = "aar.demo@ilocator.com";
+databaseAuthUser = "DEMO";
 #This is bad practice.
-databaseAuthPass = "Aarilo654"
+databaseAuthPass = "PW"
 #And setting up the list of fields for the CSV
 objectFieldNames = ['id', 'latitude', 'longitude', 'part_nmbr', 'serial_nmbr', 'information', 'information2', 'dimension', 'weight', 'origin', 'mobileapp_version_number', 'gps_precision', 'gps_age', 'gps_altitude', 'organizations_id', 'users_id', 'created', 'modified', 'modified_merged', 'crud', 'deleted', 'modified_timezone', 'object_categories_id', 'object_types_id', 'object_events_id', 'object_statuses_id']
 
