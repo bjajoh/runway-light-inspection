@@ -1,6 +1,6 @@
 <img src="./documentation/figures/AAU_logo_2012.png" align="right" title="pieye logo" width="120" >
 
-# Inspection of Ground Embedded Runway Lightsthrough Monoscopic Camera via Mobile Robotics
+# Inspection of Ground Embedded Runway Lights through Monoscopic Camera via Mobile Robotics
 
 The aim of this work was to investigate the potential of an automated solution for inspection of ground-embedded runway-lights, with no humans-in-the-loop. A prototype differential-drive mobile robot featuring two monoscopic cameras, communicating with a database of positions from ground-embedded runway-lights was built and tested on an airport. Tests indicated promising results for further research and expansion of the current robotic-platform-solution as a functional and viable solution for automatic inspection of runway-lights. Accuracy test requirements demanded a maximum distance error of 15 meters with a maximum angular error of 2.9$°. Results showed the robot was able to maneuver around a predefined path with a mean heading angular error of 1.6°. Runway light-detection test of a set of 58 runway-lights concluded on a 6 meter accuracy, with a maximum angular error of 1.7°. Both of these results within the required specifications. The significance of these results demonstrate the viability of this paper's robotic system in runway light-detection within minimum specification, as well as usage of the detection methods to determine which lights need human intervention for replacement or maintenance.
 
