@@ -94,37 +94,9 @@ State  estimation  is  an  essential  part  of  any  mobile  roboticapplication 
     <figcaption>Fig. 7. Overview of the State Estimation.</figcaption>
 </figure>
 
-Madgwick’s algorithm is applicable to inertial measurement units   (IMU)   consisting   of   gyroscopes   and   accelerometerssensor arrays that also include magnetometers. It shows a 36% lower orientation standard deviation error then Kalman-basedapproaches. The  algorithm  uses  a  quaternion  representation, This representation is numerically more efficient and required by the ROS common messages. Allowing accelerometer and  magnetometer  data  to  be  used  in  an  analytically  derivedand  optimised  gradient  descent  algorithm  to  calculate  the direction of the gyroscope measurement error as a quaternion derivative. The orientation is calculated by two main processes. In  the  first  step  gyroscope  measurements  are  processed  with a correction algorithm, which depends on the parameter ζ. To minimize the error caused by  the  bias  and  the  drift,  they  are  used  to  calculate  the orientation  with  the  quaternion  propagation  starting  from  the orientation  estimated  at  the  previous  step.  Afterwards  the accelerometer and magnetometer measurements are fused with a tuning parameter β by the gradient descent algorithm. The output of the gradient descent algorithm is then  used  to  correct  the  orientation  estimated  by  considering only gyroscope measurements. In order to have reliable input for the Extended Kalman Filter the standard deviation of thefused  9-dof  output  is  determined  and  set  accordingly  in  the covariance matrices. The  process  model  for  the  extended  kalman  filter  used  is driven  by  the  accelerometer.  The  robot base frame is chosen to carry the IMU which is placed in the center  of  rotation  which  is  represented  by  the  middle  point between  both  powered  wheels.  A  constant  velocity  model is  used  with  the  accelerometer  as  an  input  to  the  system. Due  to  the  application  constraints  of  a  mobile  robot  on  an airport  runway,  it  is  known  that  the  vehicle  will  remain  flat on the ground and not be significantly tilted. This assumption simplifies  the  state  to  a  2D  state  with  only  6  elements.  The state vector is defined as:
+Madgwick’s algorithm is applicable to inertial measurement units   (IMU)   consisting   of   gyroscopes   and   accelerometerssensor arrays that also include magnetometers. It shows a 36% lower orientation standard deviation error then Kalman-basedapproaches. The  algorithm  uses  a  quaternion  representation, This representation is numerically more efficient and required by the ROS common messages. Allowing accelerometer and  magnetometer  data  to  be  used  in  an  analytically  derivedand  optimised  gradient  descent  algorithm  to  calculate  the direction of the gyroscope measurement error as a quaternion derivative. The orientation is calculated by two main processes. In  the  first  step  gyroscope  measurements  are  processed  with a correction algorithm, which depends on the parameter ζ. To minimize the error caused by  the  bias  and  the  drift,  they  are  used  to  calculate  the orientation  with  the  quaternion  propagation  starting  from  the orientation  estimated  at  the  previous  step.  Afterwards  the accelerometer and magnetometer measurements are fused with a tuning parameter β by the gradient descent algorithm. The output of the gradient descent algorithm is then  used  to  correct  the  orientation  estimated  by  considering only gyroscope measurements. In order to have reliable input for the Extended Kalman Filter the standard deviation of thefused  9-dof  output  is  determined  and  set  accordingly  in  the covariance matrices. The  process  model  for  the  extended  kalman  filter  used  is driven  by  the  accelerometer.  The  robot base frame is chosen to carry the IMU which is placed in the center  of  rotation  which  is  represented  by  the  middle  point between  both  powered  wheels.  A  constant  velocity  model is  used  with  the  accelerometer  as  an  input  to  the  system. Due  to  the  application  constraints  of  a  mobile  robot  on  an airport  runway,  it  is  known  that  the  vehicle  will  remain  flat on the ground and not be significantly tilted. This assumption simplifies  the  state  to  a  2D  state  with  only  6  elements.
 
-<figure>
-    <img src="https://render.githubusercontent.com/render/math?math=x = [p^T, \theta , v^T, r]^T">
-</figure>
-
-<figure>
-    <img src="https://render.githubusercontent.com/render/math?math=p = [x, y]^T">
-</figure>
-
-<figure>
-    <img src="https://render.githubusercontent.com/render/math?math=v = [v_x, v_y]^T">
-</figure>
-
-<img src="https://render.githubusercontent.com/render/math?math=p"> and <img src="https://render.githubusercontent.com/render/math?math=\theta"> are the position and heading of the mobile robot platform represented in the map frame. <img src="https://render.githubusercontent.com/render/math?math=v"> and <img src="https://render.githubusercontent.com/render/math?math=r"> are the linear and angular velocities of the robot represented in it's the base frame. The process model is defined as:
-
-<figure>
-    <img src="https://render.githubusercontent.com/render/math?math=\dot{p}=R(\theta)^Tv">
-</figure>
-
-<figure>
-    <img src="https://render.githubusercontent.com/render/math?math=\dot{\theta}=r">
-</figure>
-
-<figure>
-    <img src="https://render.githubusercontent.com/render/math?math=\dot{v}=a+[v_{y} r - v_{x} r]^T+n_v">
-</figure>
-
-<figure>
-    <img src="https://render.githubusercontent.com/render/math?math=\dot{r}=n_r">
-</figure>
+<img src="https://render.githubusercontent.com/render/math?math=p"> and <img src="https://render.githubusercontent.com/render/math?math=\theta"> are the position and heading of the mobile robot platform represented in the map frame. <img src="https://render.githubusercontent.com/render/math?math=v"> and <img src="https://render.githubusercontent.com/render/math?math=r"> are the linear and angular velocities of the robot represented in it's the base frame.
 
 <img src="https://render.githubusercontent.com/render/math?math=a"> is  the  measured  acceleration, R(θ) the rotation  matrix between  the  robot  base  frame  and  the  fixed  map  frame. <img src="https://render.githubusercontent.com/render/math?math=n_r"> andn <img src="https://render.githubusercontent.com/render/math?math=v"> represent white noise. The robot platform is equippedwith multiple sensors which can be reduced to the quantitiesbeing measured: position <img src="https://render.githubusercontent.com/render/math?math=z_p">, heading zθ, velocity <img src="https://render.githubusercontent.com/render/math?math=z_v">, and yawrate <img src="https://render.githubusercontent.com/render/math?math=z_r">.  For  example  the  GNSS  can  be  seen  as  an  absolute position sensor. This holds only if it can be assumed that the noises of the decomposed measurements are uncorrelated. 
 
